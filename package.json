@@ -1,0 +1,22 @@
+{
+	"name": "mono-repo",
+	"version": "0.0.0",
+	"license": "MIT",
+	"private": true,
+	"engines": {
+		"node": "^12.21.0 || 14"
+	},
+	"scripts": {
+		"postinstall": "yarn install:meteor",
+		"install:meteor": "cd meteor && meteor --version && meteor npm install",
+		"start": "yarn install && yarn dev",
+		"dev": "cd meteor && meteor npm run start",
+		"validate:release": "yarn install && yarn validate:release:meteor",
+		"validate:release:meteor": "cd meteor && meteor npm run validate:prod-dependencies && meteor npm run license-validate && meteor npm run lint && meteor npm run test",
+		"meteor": "cd meteor && meteor",
+		"reset": "meteor node scripts/reset.js"
+	},
+	"devDependencies": {
+		"rimraf": "^3.0.2"
+	}
+}
