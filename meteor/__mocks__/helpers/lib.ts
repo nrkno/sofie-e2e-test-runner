@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
-import { ProtectedString } from '../../lib/lib'
-import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
+import { ProtectedString } from '../../lib/protectedString'
 
 /*
 interface MockedCollection<T, Y extends any[]> {
@@ -40,10 +40,10 @@ const METHOD_NAMES = [
  * Make mocks of all methods of a collection.
  * Important: This Remember to run resetMockupCollection() after the test
  */
-export function mockupCollection<A extends B, B extends { _id: ProtectedString<any> }>(
-	collection0: AsyncTransformedCollection<A, B>
-): AsyncTransformedCollection<A, B> & MockedCollection {
-	const collection = collection0 as AsyncTransformedCollection<A, B> & MockedCollection
+export function mockupCollection<A extends { _id: ProtectedString<any> }>(
+	collection0: AsyncMongoCollection<A>
+): AsyncMongoCollection<A> & MockedCollection {
+	const collection = collection0 as AsyncMongoCollection<A> & MockedCollection
 
 	_.each(METHOD_NAMES, (methodName) => {
 		collection['__original' + methodName] = collection[methodName]
@@ -59,8 +59,8 @@ export function mockupCollection<A extends B, B extends { _id: ProtectedString<a
 
 	return collection
 }
-export function resetMockupCollection<A extends B, B extends { _id: ProtectedString<any> }>(
-	collection: AsyncTransformedCollection<A, B>
+export function resetMockupCollection<A extends { _id: ProtectedString<any> }>(
+	collection: AsyncMongoCollection<A>
 ): void {
 	_.each(METHOD_NAMES, (methodName) => {
 		collection[methodName] = collection['__original' + methodName]

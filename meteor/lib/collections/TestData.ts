@@ -1,6 +1,8 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
+import { ProtectedString } from '../protectedString'
+import { CollectionName } from './Collections'
 
 export type TestDataId = ProtectedString<'TestDataId'>
 
@@ -9,8 +11,8 @@ export interface TestDataObject {
 	name: string
 }
 
-export const TestData = createMongoCollection<TestDataObject, TestDataObject>('TestData')
-registerCollection('TestData', TestData)
+export const TestData = createMongoCollection<TestDataObject>(CollectionName.TestData)
+registerCollection(CollectionName.TestData, TestData)
 registerIndex(TestData, {
 	_id: 1,
 })

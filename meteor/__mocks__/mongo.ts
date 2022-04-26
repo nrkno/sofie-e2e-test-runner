@@ -1,36 +1,22 @@
 import * as _ from 'underscore'
+import { literal, sleep } from '../lib/lib'
 import {
 	mongoWhere,
-	literal,
-	ProtectedString,
-	unprotectString,
-	protectString,
 	mongoModify,
 	mongoFindOptions,
-	sleep,
-} from '../lib/lib'
-import { RandomMock } from './random'
-import {
-	UpsertOptions,
-	UpdateOptions,
 	FindOptions,
-	ObserveChangesCallbacks,
-	ObserveCallbacks,
+	UpsertOptions,
 	FindOneOptions,
-} from '../lib/typings/meteor'
+	UpdateOptions,
+} from '../lib/mongo'
+import { ProtectedString, unprotectString, protectString } from '../lib/protectedString'
+import { RandomMock } from './random'
+import { ObserveChangesCallbacks, ObserveCallbacks } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
-import {
-	BulkWriteOperation,
-	BulkWriteInsertOneOperation,
-	BulkWriteUpdateOneOperation,
-	BulkWriteUpdateManyOperation,
-	BulkWriteReplaceOneOperation,
-	BulkWriteDeleteOneOperation,
-	BulkWriteDeleteManyOperation,
-} from 'mongodb'
-import { AsyncTransformedCollection } from '../lib/collections/lib'
+import type { AnyBulkWriteOperation } from 'mongodb'
+import { AsyncMongoCollection } from '../lib/collections/lib'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -61,12 +47,11 @@ export namespace MongoMock {
 
 		public asyncBulkWriteDelay = 100
 
-		private _transform?: (o: T) => T
-
 		constructor(name: string, options?: any) {
 			this._options = options || {}
 			this._name = name
-			this._transform = this._options.transform
+
+			if (this._options.transform) throw new Error('document transform is no longer supported')
 		}
 
 		find(query: any, options?: FindOptions<T>) {
@@ -83,7 +68,7 @@ export namespace MongoMock {
 				query._id && _.isString(query._id)
 					? [this.documents[query._id]]
 					: _.filter(docsArray, (doc) => mongoWhere(doc, query))
-			)
+			) as T[]
 
 			docs = mongoFindOptions(docs, options)
 
@@ -100,10 +85,7 @@ export namespace MongoMock {
 					return docs
 				},
 				fetch: () => {
-					const transform = this._transform ? this._transform : (doc) => doc
-					return _.map(docs, (doc) => {
-						return transform(clone(doc))
-					})
+					return clone(docs)
 				},
 				count: () => {
 					return docs.length
@@ -226,7 +208,7 @@ export namespace MongoMock {
 				const count = this.update(docs[0]._id, modifier, options)
 				return { insertedId: undefined, numberAffected: count }
 			} else {
-				const doc = mongoModify(query, { _id: id }, modifier)
+				const doc = mongoModify<T>(query, { _id: id } as any, modifier)
 				const insertedId = this.insert(doc)
 				return { insertedId: insertedId, numberAffected: undefined }
 			}
@@ -264,38 +246,32 @@ export namespace MongoMock {
 				// indexes: () => {}
 				// stats: () => {}
 				// drop: () => {}
-				bulkWrite: async (updates: BulkWriteOperation<any>[], _options) => {
+				bulkWrite: async (updates: AnyBulkWriteOperation<any>[], _options) => {
 					await sleep(this.asyncBulkWriteDelay)
 
-					for (let update of updates) {
-						if (update['insertOne']) {
-							update = update as BulkWriteInsertOneOperation<any>
+					for (const update of updates) {
+						if ('insertOne' in update) {
 							this.insert(update.insertOne.document)
-						} else if (update['updateOne']) {
-							update = update as BulkWriteUpdateOneOperation<any>
+						} else if ('updateOne' in update) {
 							if (update.updateOne.upsert) {
 								this.upsert(update.updateOne.filter, update.updateOne.update, { multi: false })
 							} else {
 								this.update(update.updateOne.filter, update.updateOne.update, { multi: false })
 							}
-						} else if (update['updateMany']) {
-							update = update as BulkWriteUpdateManyOperation<any>
+						} else if ('updateMany' in update) {
 							if (update.updateMany.upsert) {
 								this.upsert(update.updateMany.filter, update.updateMany.update, { multi: true })
 							} else {
 								this.update(update.updateMany.filter, update.updateMany.update, { multi: true })
 							}
-						} else if (update['deleteOne']) {
-							update = update as BulkWriteDeleteOneOperation<any>
+						} else if ('deleteOne' in update) {
 							const docs = this.find(update.deleteOne.filter).fetch()
 							if (docs.length) {
 								this.remove(docs[0]._id)
 							}
-						} else if (update['deleteMany']) {
-							update = update as BulkWriteDeleteManyOperation<any>
+						} else if ('deleteMany' in update) {
 							this.remove(update.deleteMany.filter)
 						} else if (update['replaceOne']) {
-							update = update as BulkWriteReplaceOneOperation<any>
 							this.upsert(update.replaceOne.filter, update.replaceOne.replacement)
 						}
 					}
@@ -313,7 +289,7 @@ export namespace MongoMock {
 	}
 	// Mock functions:
 	export function mockSetData<T extends CollectionObject>(
-		collection: AsyncTransformedCollection<T, T>,
+		collection: AsyncMongoCollection<T>,
 		data: MockCollection<T> | Array<T> | null
 	) {
 		const collectionName = collection.name
@@ -345,15 +321,10 @@ export namespace MongoMock {
 	 * This simulates the async nature of writes to mongo, and aims to detect race conditions in our code.
 	 * This method will change the duration of the sleep, and returns the old delay value
 	 */
-	export function setCollectionAsyncBulkWriteDelay(
-		collection: AsyncTransformedCollection<any, any>,
-		delay: number
-	): number {
+	export function setCollectionAsyncBulkWriteDelay(collection: AsyncMongoCollection<any>, delay: number): number {
 		const collection2 = collection as any
 		if (typeof collection2.asyncWriteDelay !== 'number') {
-			throw new Error(
-				"asyncWriteDelay must be defined already, or this won't do anything. Perhaps some refactoring?"
-			)
+			throw new Error("asyncWriteDelay must be defined already, or this won't do anything. Perhaps some refactoring?")
 		}
 		const oldDelay = collection2.asyncWriteDelay
 		collection2.asyncWriteDelay = delay

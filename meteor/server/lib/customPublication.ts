@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { PubSub } from '../../lib/api/pubsub'
-import { DBObj, unprotectString } from '../../lib/lib'
+import { DBObj } from '../../lib/lib'
+import { unprotectString } from '../../lib/protectedString'
 import _ from 'underscore'
 
 class CustomPublish {

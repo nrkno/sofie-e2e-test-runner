@@ -104,7 +104,7 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 						delete runningMethods[methodId]
 						return result
 					}
-				} catch (err) {
+				} catch (err: any) {
 					if (!_suppressExtraErrorLogging) {
 						console.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
 					}
