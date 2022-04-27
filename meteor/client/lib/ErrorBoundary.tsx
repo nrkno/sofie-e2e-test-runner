@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { PropsWithChildren } from 'react'
 
 interface IState {
 	hasError: boolean
@@ -8,7 +8,7 @@ interface IState {
 	expandedComponentStack?: boolean
 }
 
-export class ErrorBoundary extends React.Component<{}, IState> {
+export class ErrorBoundary extends React.Component<PropsWithChildren<{}>, IState> {
 	static style = {
 		box: {
 			display: 'block',

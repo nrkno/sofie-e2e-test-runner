@@ -1,13 +1,12 @@
-import * as React from 'react'
+import React from 'react'
 import { Meteor } from 'meteor/meteor'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 
 import '../lib/main'
 
-import './lib/bootstrap/index.esm.js'
 // Import files that call Meteor.startup:
 import './lib/dev'
 
@@ -26,10 +25,12 @@ import { App } from './ui/App'
 // }
 
 Meteor.startup(() => {
-	render(
+	const container = document.getElementById('render-target')
+	if (!container) throw new Error('Could not find container for React App')
+	const root = createRoot(container)
+	root.render(
 		<DndProvider backend={HTML5Backend}>
 			<App />
-		</DndProvider>,
-		document.getElementById('render-target')
+		</DndProvider>
 	)
 })

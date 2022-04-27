@@ -78,26 +78,30 @@ export const DatePickerFromTo = withTranslation()(
 						<FontAwesomeIcon icon={faChevronLeft} />
 					</button>
 					<label className="mod mhs mvn">
-						{t('From')}
-						<div className="picker expco">
-							<DatePicker
-								dateFormat="yyyy-MM-dd"
-								selected={this.state.dateFrom}
-								onChange={this.handleChangeFrom}
-								className="expco-title"
-							/>
-						</div>
+						<>
+							{t('From')}
+							<div className="picker expco">
+								<DatePicker
+									dateFormat="yyyy-MM-dd"
+									selected={this.state.dateFrom}
+									onChange={this.handleChangeFrom}
+									className="expco-title"
+								/>
+							</div>
+						</>
 					</label>
 					<label className="mod mhs mvn">
-						{t('Until')}
-						<div className="picker expco">
-							<DatePicker
-								dateFormat="yyyy-MM-dd"
-								selected={this.state.dateTo}
-								onChange={this.handleChangeTo}
-								className="expco-title"
-							/>
-						</div>
+						<>
+							{t('Until')}
+							<div className="picker expco">
+								<DatePicker
+									dateFormat="yyyy-MM-dd"
+									selected={this.state.dateTo}
+									onChange={this.handleChangeTo}
+									className="expco-title"
+								/>
+							</div>
+						</>
 					</label>
 					<button className="action-btn mod mhm" onClick={this.onClickNext}>
 						<FontAwesomeIcon icon={faChevronRight} />

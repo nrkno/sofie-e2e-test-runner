@@ -17,7 +17,6 @@ typescript              # Enable TypeScript syntax in .ts and .tsx modules
 shell-server            # Server-side component of the `meteor shell` command
 
 static-html              # Define static page content in .html files
-react-meteor-data        # React higher-order component for reactively tracking Meteor data
 
 
 tracker                  # Meteor's client-side reactive programming library

@@ -1,8 +1,7 @@
 import * as React from 'react'
 import { Tracker } from 'meteor/tracker'
 import { useTracker } from './ReactMeteorData/ReactMeteorData'
-import Modal from 'react-bootstrap/Modal'
-import classNames from 'classnames'
+import { CButton, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from '@coreui/react'
 
 const modalsDep = new Tracker.Dependency()
 const activeModals: ModalOptions[] = []
@@ -15,41 +14,33 @@ export const ModalContainer: React.FC<{}> = function ModalContainer(props) {
 
 	if (!latestModal) return null
 	return (
-		<div className="modal show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-			<Modal.Dialog>
-				<Modal.Header>
-					<button
-						type="button"
-						className="btn-close float-right"
-						aria-label="Close"
-						onClick={() => closeModal()}
-					></button>
-					<Modal.Title>{latestModal.title}</Modal.Title>
-				</Modal.Header>
+		<CModal visible onClose={() => closeModal()} backdrop="static">
+			<CModalHeader>
+				<CModalTitle>{latestModal.title}</CModalTitle>
+			</CModalHeader>
 
-				<Modal.Body>
-					<p>{latestModal.content}</p>
-				</Modal.Body>
+			<CModalBody>
+				<p>{latestModal.content}</p>
+			</CModalBody>
 
-				<Modal.Footer>
-					{latestModal.actions.map((action, index) => {
-						return (
-							<button
-								key={index}
-								type="button"
-								className={classNames('btn', index === 0 ? 'btn-primary' : 'btn-default')}
-								onClick={() => {
-									action.fcn?.()
-									closeModal()
-								}}
-							>
-								{action.label}
-							</button>
-						)
-					})}
-				</Modal.Footer>
-			</Modal.Dialog>
-		</div>
+			<CModalFooter>
+				{latestModal.actions.map((action, index) => {
+					return (
+						<CButton
+							key={index}
+							type="button"
+							color={index === 0 ? 'primary' : 'secondary'}
+							onClick={() => {
+								action.fcn?.()
+								closeModal()
+							}}
+						>
+							{action.label}
+						</CButton>
+					)
+				})}
+			</CModalFooter>
+		</CModal>
 	)
 }
 

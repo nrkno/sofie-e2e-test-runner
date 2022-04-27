@@ -131,10 +131,12 @@ export const IconPicker = withTranslation()(
 								</div>
 							)}
 							{_.values(
-								_.mapObject(this.getFilteredIcons(), (value: IconDefinition, key) => {
+								_.mapObject(this.getFilteredIcons(), (value: IconDefinition | undefined, key) => {
+									if (!value) return null
 									return (
 										<div className="expco-item" key={key}>
 											<label className="action-btn" title={value.iconName} onClick={() => this.handleChange(value)}>
+												{/* @ts-ignore */}
 												<FontAwesomeIcon icon={value.iconName} />
 											</label>
 										</div>

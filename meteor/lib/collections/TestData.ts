@@ -12,7 +12,6 @@ export interface TestDataObject {
 }
 
 export const TestData = createMongoCollection<TestDataObject>(CollectionName.TestData)
-registerCollection(CollectionName.TestData, TestData)
 registerIndex(TestData, {
 	_id: 1,
 })
