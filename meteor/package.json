@@ -48,6 +48,7 @@
 		"@babel/runtime": "^7.15.4",
 		"@coreui/coreui": "^4.1.3",
 		"@coreui/react": "^4.1.2",
+		"@coreui/react-chartjs": "^2.0.3",
 		"@crello/react-lottie": "0.0.9",
 		"@fortawesome/fontawesome": "^1.1.8",
 		"@fortawesome/fontawesome-svg-core": "^6.1.1",
