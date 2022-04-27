@@ -3,6 +3,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+/* eslint-disable-next-line node/no-extraneous-import */
 import type { Collection as RawCollection } from 'mongodb'
 
 // This is a copy of the type used in the Users collection,

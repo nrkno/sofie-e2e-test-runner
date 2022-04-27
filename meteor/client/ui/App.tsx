@@ -9,7 +9,7 @@ import { CButton, CContainer, CFooter, CLink, CNavbar, CNavbarBrand } from '@cor
 	CSS: https://coreui.io/docs/getting-started/introduction/
 */
 
-export const App: React.FC<{}> = function App(props: {}) {
+export const App: React.FC<{}> = function App() {
 	return (
 		<>
 			<CNavbar colorScheme="dark" className="bg-dark">

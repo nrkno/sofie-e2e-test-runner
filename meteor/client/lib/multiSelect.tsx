@@ -124,11 +124,14 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	toggleExpco = async () => {
-		await this._popperUpdate()
-		this.setState({
-			expanded: !this.state.expanded,
-		})
+	toggleExpco = () => {
+		this._popperUpdate()
+			.then(() => {
+				this.setState({
+					expanded: !this.state.expanded,
+				})
+			})
+			.catch(console.error)
 	}
 
 	setTitleRef = (ref, popperRef) => {

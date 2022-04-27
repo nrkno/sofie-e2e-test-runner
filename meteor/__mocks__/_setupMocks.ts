@@ -23,7 +23,6 @@ jest.mock('meteor/kschingiz:meteor-elastic-apm', (...args) => require('./meteor-
 
 jest.mock('meteor/mongo', (...args) => require('./mongo').setup(args), { virtual: true })
 
-
 beforeEach(() => {
 	resetRandomId()
 })

@@ -9,7 +9,6 @@ export type MethodsBase = {
 }
 interface IMeteorCall {
 	various: VariousAPI
-
 }
 export const MeteorCall: IMeteorCall = {
 	various: makeMethods(VariousAPIMethods),

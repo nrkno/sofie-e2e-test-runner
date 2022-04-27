@@ -1,8 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { PubSub } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
-import { Mongocursor, UserId } from '../../lib/typings/meteor'
+import { Mongocursor } from '../../lib/typings/meteor'
 import { ProtectedString } from '../../lib/protectedString'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}

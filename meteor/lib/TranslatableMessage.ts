@@ -1,6 +1,4 @@
 import { TFunction } from 'i18next'
-import { ArrayElement } from './lib'
-import { unprotectString } from './protectedString'
 
 /**
  * @enum - A translatable message (i18next)

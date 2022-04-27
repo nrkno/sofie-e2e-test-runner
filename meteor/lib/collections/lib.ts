@@ -6,6 +6,7 @@ import * as _ from 'underscore'
 import { ProtectedString } from '../protectedString'
 import { logger } from '../logging'
 import { UpdateOptions, UpsertOptions, FindOptions } from './../mongo'
+/* eslint-disable-next-line node/no-extraneous-import */
 import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
 import { CollectionName } from './Collections'
 

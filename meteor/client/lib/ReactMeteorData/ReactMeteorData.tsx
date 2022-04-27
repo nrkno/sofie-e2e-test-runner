@@ -39,7 +39,7 @@ class MeteorDataManager {
 		}
 	}
 
-	static runUpdates() {
+	static runUpdates(this: void) {
 		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
 		globalTrackerTimestamp = undefined
@@ -210,7 +210,9 @@ export const ReactMeteorData = {
 		this._meteorDataManager.dispose()
 	},
 	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })
+	// eslint-disable-next-line @typescript-eslint/unbound-method
 	autorun: MeteorReactComponent.prototype.autorun,
+	// eslint-disable-next-line @typescript-eslint/unbound-method
 	subscribe: MeteorReactComponent.prototype.subscribe,
 }
 

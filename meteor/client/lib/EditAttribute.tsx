@@ -1,8 +1,7 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import * as React from 'react'
 import * as _ from 'underscore'
 import { withTracker } from './ReactMeteorData/react-meteor-data'
-import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { TransformedCollection } from '../../lib/typings/meteor'
@@ -11,6 +10,7 @@ import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { Random } from 'meteor/random'
 import { assertNever } from '../../lib/lib'
+import { CFormCheck, CFormInput, CFormLabel, CFormSelect, CFormSwitch, CFormText, CFormTextarea } from '@coreui/react'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -82,6 +82,8 @@ interface IEditAttributeBaseProps {
 	updateFunction?: (edit: EditAttributeBase, newValue: any) => void
 	overrideDisplayValue?: any
 	label?: string
+	placeholder?: string
+	description?: string
 	mutateDisplayValue?: (v: any) => any
 	mutateUpdateValue?: (v: any) => any
 	disabled?: boolean
@@ -240,23 +242,19 @@ const EditAttributeText = wrapEditAttribute(
 		}
 		render() {
 			return (
-				<input
-					type="text"
-					className={
-						'form-control' +
-						' ' +
-						(this.state.valueError ? 'error ' : '') +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
-					disabled={this.props.disabled}
-				/>
+				<>
+					{this.props.label && <CFormLabel>{this.props.label}</CFormLabel>}
+					<CFormInput
+						type="text"
+						placeholder={this.props.placeholder}
+						value={this.getEditAttribute() || ''}
+						onChange={this.handleChange}
+						onBlur={this.handleBlur}
+						onKeyUp={this.handleEscape}
+						disabled={this.props.disabled}
+					/>
+					{this.props.description && <CFormText component="span">{this.props.description}</CFormText>}
+				</>
 			)
 		}
 	}
@@ -290,23 +288,19 @@ const EditAttributeMultilineText = wrapEditAttribute(
 		}
 		render() {
 			return (
-				<textarea
-					className={
-						'form-control' +
-						' ' +
-						(this.state.valueError ? 'error ' : '') +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
-					onKeyPress={this.handleEnterKey}
-					disabled={this.props.disabled}
-				/>
+				<>
+					{this.props.label && <CFormLabel>{this.props.label}</CFormLabel>}
+					<CFormTextarea
+						placeholder={this.props.placeholder}
+						value={this.getEditAttribute() || ''}
+						onChange={this.handleChange}
+						onBlur={this.handleBlur}
+						onKeyUp={this.handleEscape}
+						onKeyPress={this.handleEnterKey}
+						disabled={this.props.disabled}
+					></CFormTextarea>
+					{this.props.description && <CFormText component="span">{this.props.description}</CFormText>}
+				</>
 			)
 		}
 	}
@@ -338,22 +332,19 @@ const EditAttributeInt = wrapEditAttribute(
 		}
 		render() {
 			return (
-				<input
-					type="number"
-					step="1"
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttributeNumber()}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					disabled={this.props.disabled}
-				/>
+				<>
+					{this.props.label && <CFormLabel>{this.props.label}</CFormLabel>}
+					<CFormInput
+						type="number"
+						step="1"
+						placeholder={this.props.placeholder}
+						value={this.getEditAttribute() || ''}
+						onChange={this.handleChange}
+						onBlur={this.handleBlur}
+						disabled={this.props.disabled}
+					/>
+					{this.props.description && <CFormText component="span">{this.props.description}</CFormText>}
+				</>
 			)
 		}
 	}
@@ -385,22 +376,19 @@ const EditAttributeFloat = wrapEditAttribute(
 		}
 		render() {
 			return (
-				<input
-					type="number"
-					step="0.1"
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttributeNumber()}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					disabled={this.props.disabled}
-				/>
+				<>
+					{this.props.label && <CFormLabel>{this.props.label}</CFormLabel>}
+					<CFormInput
+						type="number"
+						step="0.1"
+						placeholder={this.props.placeholder}
+						value={this.getEditAttribute() || ''}
+						onChange={this.handleChange}
+						onBlur={this.handleBlur}
+						disabled={this.props.disabled}
+					/>
+					{this.props.description && <CFormText component="span">{this.props.description}</CFormText>}
+				</>
 			)
 		}
 	}
@@ -416,26 +404,16 @@ const EditAttributeCheckbox = wrapEditAttribute(
 			return !!this.getEditAttribute()
 		}
 		handleChange() {
-			console.log('handle schange', !this.state.value)
 			this.handleUpdate(!this.state.value)
 		}
 		render() {
-			const id = `${this.props.obj?._id}_${this.props.attribute}`
 			return (
-				<label>
-					<div className="form-check">
-						<input
-							className="form-check-input"
-							type="checkbox"
-							value=""
-							id={id}
-							checked={this.isChecked()}
-							onChange={this.handleChange}
-							disabled={this.props.disabled}
-						/>
-						<label className="form-check-label" htmlFor={id}></label>
-					</div>
-				</label>
+				<CFormCheck
+					defaultChecked={this.isChecked()}
+					onChange={this.handleChange}
+					disabled={this.props.disabled}
+					label={this.props.label}
+				/>
 			)
 		}
 	}
@@ -456,32 +434,14 @@ const EditAttributeToggle = wrapEditAttribute(
 		}
 		render() {
 			return (
-				<div className="mvs">
-					<a
-						className={ClassNames(
-							'switch-button',
-							'mrs',
-							this.props.className,
-							this.state.editing ? this.props.modifiedClassName : undefined,
-							this.props.disabled ? 'disabled' : '',
-							{
-								'sb-on': this.isChecked(),
-							}
-						)}
-						role="button"
-						onClick={this.handleClick}
-						tabIndex={0}
-					>
-						<div className="sb-content">
-							<div className="sb-label">
-								<span className="mls">&nbsp;</span>
-								<span className="mrs right">&nbsp;</span>
-							</div>
-							<div className="sb-switch"></div>
-						</div>
-					</a>
-					<span>{this.props.label}</span>
-				</div>
+				<CFormCheck
+					button={{ color: 'primary', variant: 'outline' }}
+					autoComplete="off"
+					label={this.props.label}
+					defaultChecked={this.isChecked()}
+					disabled={this.props.disabled}
+					onChange={this.handleChange}
+				/>
 			)
 		}
 	}
@@ -502,22 +462,12 @@ const EditAttributeSwitch = wrapEditAttribute(
 		}
 		render() {
 			return (
-				<div
-					className={
-						'switch ' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '') +
-						' ' +
-						(this.isChecked() ? 'switch-active' : '') +
-						' ' +
-						(this.props.disabled ? 'disabled' : '')
-					}
-					onClick={this.handleClick}
-				>
-					{this.props.label}
-				</div>
+				<CFormSwitch
+					label={this.props.label}
+					defaultChecked={this.isChecked()}
+					disabled={this.props.disabled}
+					onChange={this.handleChange}
+				/>
 			)
 		}
 	}
@@ -544,6 +494,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
+				// eslint-disable-next-line @typescript-eslint/no-for-in-array
 				for (const key in this.props.options) {
 					const val = this.props.options[key]
 					if (typeof val === 'object') {
@@ -618,18 +569,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 		}
 		render() {
 			return (
-				<select
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					value={this.getAttributeText()}
-					onChange={this.handleChange}
-					disabled={this.props.disabled}
-				>
+				<CFormSelect value={this.getAttributeText()} onChange={this.handleChange} disabled={this.props.disabled}>
 					{this.getOptions(true).map((o, j) =>
 						Array.isArray(o.value) ? (
 							<optgroup key={j} label={o.name}>
@@ -645,7 +585,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 							</option>
 						)
 					)}
-				</select>
+				</CFormSelect>
 			)
 		}
 	}
@@ -691,6 +631,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
+				// eslint-disable-next-line @typescript-eslint/no-for-in-array
 				for (const key in this.props.options) {
 					const val = this.props.options[key]
 					if (typeof val === 'object') {
@@ -823,6 +764,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
+				// eslint-disable-next-line @typescript-eslint/no-for-in-array
 				for (const key in this.props.options) {
 					const val = this.props.options[key]
 					if (typeof val === 'object') {

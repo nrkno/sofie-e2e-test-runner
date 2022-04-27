@@ -1,4 +1,3 @@
-import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ProtectedString } from '../protectedString'

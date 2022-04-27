@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+/* eslint-disable-next-line node/no-extraneous-import */
 import { AnyBulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
 import { AsyncMongoCollection } from '../../lib/collections/lib'

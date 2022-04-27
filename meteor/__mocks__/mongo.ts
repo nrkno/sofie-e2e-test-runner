@@ -15,6 +15,7 @@ import { ObserveChangesCallbacks, ObserveCallbacks } from '../lib/typings/meteor
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
+/* eslint-disable-next-line node/no-extraneous-import */
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { AsyncMongoCollection } from '../lib/collections/lib'
 const clone = require('fast-clone')
@@ -324,7 +325,9 @@ export namespace MongoMock {
 	export function setCollectionAsyncBulkWriteDelay(collection: AsyncMongoCollection<any>, delay: number): number {
 		const collection2 = collection as any
 		if (typeof collection2.asyncWriteDelay !== 'number') {
-			throw new Error("asyncWriteDelay must be defined already, or this won't do anything. Perhaps some refactoring?")
+			throw new Error(
+				"asyncWriteDelay must be defined already, or this won't do anything. Perhaps some refactoring?"
+			)
 		}
 		const oldDelay = collection2.asyncWriteDelay
 		collection2.asyncWriteDelay = delay

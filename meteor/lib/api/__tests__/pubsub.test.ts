@@ -7,6 +7,6 @@ describe('Pubsub', () => {
 			expect(values[key]).toBeFalsy()
 			values[key] = true
 		}
-		expect(Object.keys(values).length).toBeGreaterThan(10)
+		expect(Object.keys(values).length).toBeGreaterThan(0)
 	})
 })

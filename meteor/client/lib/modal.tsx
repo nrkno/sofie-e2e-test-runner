@@ -6,7 +6,7 @@ import { CButton, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } 
 const modalsDep = new Tracker.Dependency()
 const activeModals: ModalOptions[] = []
 
-export const ModalContainer: React.FC<{}> = function ModalContainer(props) {
+export const ModalContainer: React.FC<{}> = function ModalContainer() {
 	const latestModal: ModalOptions | undefined = useTracker(() => {
 		modalsDep.depend()
 		return activeModals[activeModals.length - 1]
