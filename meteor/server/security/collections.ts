@@ -1,5 +1,6 @@
 // import { rejectFields } from './lib/lib'
 import { TestData } from '../../lib/collections/TestData'
+import { WorkOrders } from '../../lib/collections/WorkOrder'
 
 // Set up direct collection write access
 
@@ -15,5 +16,17 @@ TestData.allow({
 	},
 	remove() {
 		return true
+	},
+})
+
+WorkOrders.allow({
+	insert() {
+		return false
+	},
+	update() {
+		return false
+	},
+	remove() {
+		return false
 	},
 })

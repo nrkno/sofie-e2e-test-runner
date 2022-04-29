@@ -1,1 +1,11 @@
+@import '_theme';
 @import '{}/node_modules/@coreui/coreui/scss/coreui';
+
+:root {
+	--cui-font-sans-serif: 'Roboto', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+		'Noto Color Emoji';
+}
+
+body {
+	background-color: var(--cui-light);
+}
