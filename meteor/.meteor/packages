@@ -28,3 +28,4 @@ meteorhacks:picker
 ostrio:meteor-root
 accounts-password
 # kschingiz:meteor-elastic-apm #Temporarily disabled, due to being incompatible with Meteor >2.3
+wildhart:jobs

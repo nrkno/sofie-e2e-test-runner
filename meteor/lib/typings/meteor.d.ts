@@ -37,23 +37,23 @@ export type IndexSpecifier<T> = {
 	[P in keyof T]?: -1 | 1 | string
 }
 
-// export interface FindOneOptions<DBInterface> {
-// 	sort?: SortSpecifier<DBInterface>
-// 	skip?: number
-// 	fields?: MongoFieldSpecifier<DBInterface>
-// 	reactive?: boolean
-// 	transform?: Function
-// }
-// export interface FindOptions<DBInterface> extends FindOneOptions<DBInterface> {
-// 	limit?: number
-// }
-// export interface UpdateOptions {
-// 	multi?: boolean
-// 	upsert?: boolean
-// }
-// export interface UpsertOptions {
-// 	multi?: boolean
-// }
+export interface FindOneOptions<DBInterface> {
+	sort?: SortSpecifier<DBInterface>
+	skip?: number
+	fields?: MongoFieldSpecifier<DBInterface>
+	reactive?: boolean
+	transform?: Function
+}
+export interface FindOptions<DBInterface> extends FindOneOptions<DBInterface> {
+	limit?: number
+}
+export interface UpdateOptions {
+	multi?: boolean
+	upsert?: boolean
+}
+export interface UpsertOptions {
+	multi?: boolean
+}
 /** Mongo Selector. Contains everything that can be sent into collection.find(selector) */
 export type MongoSelector<DBInterface> = Mongo.Selector<DBInterface>
 /**

@@ -28,14 +28,14 @@ export const Navbar: React.FC = function Navbar() {
 					<CNavbarNav className="me-auto mb-2 mb-lg-0">
 						<NavLink to="/">Dashboard</NavLink>
 						<NavLink to="/schedule">Schedule</NavLink>
-						<NavLink to="/history">History</NavLink>
+						<NavLink to="/reports">Reports</NavLink>
 						<NavLink to="/sources">Sources</NavLink>
 						<NavLink to="/vessels">Vessels</NavLink>
 					</CNavbarNav>
 					<CForm className="d-flex">
 						<CInputGroup>
 							<CFormInput type="search" placeholder="Search" />
-							<CButton type="submit" color="secondary" variant="outline">
+							<CButton type="submit" color="light" variant="outline">
 								Search
 							</CButton>
 						</CInputGroup>

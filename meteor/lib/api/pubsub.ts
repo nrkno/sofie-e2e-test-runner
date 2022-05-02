@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 
 export enum PubSub {
 	testData = 'testData',
+	sources = 'sources',
 }
 
 export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
