@@ -42,14 +42,13 @@ Jobs.register({
 						refs,
 					},
 				})
-				this.replicate(REFRESH_JOB_CONFIG)
-				this.success()
 			})
 			.catch((err) => {
 				logger.error(`Failed to refresh Git Repositiory: ${err}`)
-				this.replicate(REFRESH_JOB_CONFIG)
-				this.success()
 			})
+
+		this.replicate(REFRESH_JOB_CONFIG)
+		this.success()
 	},
 	[JobNames.RefreshDocker]: function (_sourceId: DockerRegistrySourceId) {
 		this.replicate(REFRESH_JOB_CONFIG)
