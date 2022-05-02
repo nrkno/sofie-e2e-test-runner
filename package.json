@@ -16,7 +16,7 @@
 		"test:meteor": "cd meteor && yarn test",
 		"lint:meteor": "cd meteor && meteor yarn lint",
 		"unit:meteor": "cd meteor && meteor yarn unit",
-		"meteor:run": "cd meteor && meteor yarn start",
+		"meteor:run": "cd meteor && cross-env TMP=../tmp meteor yarn start",
 		"lint": "yarn lint:meteor",
 		"unit": "yarn unit:meteor",
 		"validate:release": "yarn install && yarn validate:release:meteor",
@@ -27,8 +27,9 @@
 	},
 	"devDependencies": {
 		"concurrently": "^6.4.0",
-		"snyk-nodejs-lockfile-parser": "^1.38.0",
+		"cross-env": "^7.0.3",
 		"rimraf": "^3.0.2",
-		"semver": "^7.3.5"
+		"semver": "^7.3.5",
+		"snyk-nodejs-lockfile-parser": "^1.38.0"
 	}
 }

@@ -1,4 +1,6 @@
 import * as fs from 'fs'
+import * as process from 'process'
+import * as path from 'path'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 
@@ -30,4 +32,7 @@ export function extractFunctionSignature(f: Function): string[] | undefined {
 			})
 		}
 	}
+}
+export function getTempDir(): string {
+	return path.resolve(process.env.TMP || './tmp')
 }

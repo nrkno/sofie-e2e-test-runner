@@ -55,6 +55,7 @@
 		"@fortawesome/free-solid-svg-icons": "^6.1.1",
 		"@fortawesome/react-fontawesome": "^0.1.18",
 		"@popperjs/core": "^2.10.1",
+		"@snyk/docker-registry-v2-client": "^2.7.0",
 		"body-parser": "^1.19.0",
 		"bootstrap": "^5.1.3",
 		"classnames": "^2.3.1",
@@ -87,8 +88,11 @@
 		"react-popper": "^2.2.5",
 		"react-router-dom": "^6.3.0",
 		"react-timer-hoc": "^2.3.0",
+		"rimraf": "^3.0.2",
+		"simple-git": "^3.7.1",
 		"type-fest": "^1.4.0",
-		"underscore": "^1.13.1"
+		"underscore": "^1.13.1",
+		"winston": "^3.7.2"
 	},
 	"devDependencies": {
 		"@sofie-automation/code-standard-preset": "~2.0.0",
@@ -106,6 +110,7 @@
 		"@types/react-circular-progressbar": "^1.1.0",
 		"@types/react-datepicker": "^4.4.1",
 		"@types/react-dom": "^18.0.0",
+		"@types/rimraf": "^3.0.2",
 		"@types/sinon": "^9.0.11",
 		"@types/xmldom": "^0.1.31",
 		"@welldone-software/why-did-you-render": "^4.3.1",
@@ -125,7 +130,6 @@
 		"meteor-promise": "0.8.7",
 		"mock-http": "^1.1.0",
 		"open-cli": "^6.0.1",
-		"simple-git": "^2.45.1",
 		"sinon": "^9.2.4",
 		"standard-version": "^9.3.1",
 		"ts-jest": "^26.5.6",

@@ -2,6 +2,7 @@ import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ProtectedString } from '../protectedString'
 import { CollectionName } from './Collections'
+import { SourceId } from './Sources'
 
 export type WorkOrderId = ProtectedString<'WorkOrderId'>
 
@@ -22,8 +23,12 @@ export enum WorkOrderStatus {
  */
 export interface WorkOrder {
 	_id: WorkOrderId
-	coreSource: string
-	blueprintSource: string
+	coreSource: SourceId
+	coreSourceRef: string
+	blueprintSource: SourceId
+	blueprintSourceRef: string
+	testSuiteSource: SourceId
+	testSuiteSourceRef: string
 	status: WorkOrderStatus
 	tags: string[]
 }

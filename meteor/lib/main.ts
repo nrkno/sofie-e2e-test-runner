@@ -3,3 +3,5 @@
  */
 
 import './collections/TestData'
+import './collections/WorkOrder'
+import './collections/Sources'
