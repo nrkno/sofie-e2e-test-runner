@@ -26,9 +26,9 @@ export const App: React.FC = function App() {
 				<Routes>
 					<Route path="/" element={<GenericLayout />}>
 						<Route index element={<Dashboard />} />
-						<Route path="dashboard" element={<Dashboard />} />
-						<Route path="reports" element={<Reports />} />
-						<Route path="sources" element={<Sources />} />
+						<Route path="dashboard/*" element={<Dashboard />} />
+						<Route path="reports/*" element={<Reports />} />
+						<Route path="sources/*" element={<Sources />} />
 					</Route>
 					<Route path="*" element={<NotFound />} />
 				</Routes>

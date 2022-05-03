@@ -2,6 +2,7 @@ import * as _ from 'underscore'
 import { MeteorPromiseCall } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { VariousAPI, VariousAPIMethods } from './various'
+import { SourcesAPI, SourcesAPIMethods } from './sources'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -9,9 +10,11 @@ export type MethodsBase = {
 }
 interface IMeteorCall {
 	various: VariousAPI
+	sources: SourcesAPI
 }
 export const MeteorCall: IMeteorCall = {
 	various: makeMethods(VariousAPIMethods),
+	sources: makeMethods(SourcesAPIMethods),
 }
 function makeMethods(methods: object): any {
 	const o = {}

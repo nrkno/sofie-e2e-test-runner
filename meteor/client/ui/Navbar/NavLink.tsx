@@ -7,7 +7,7 @@ export const NavLink: React.FC<React.PropsWithChildren<{ to: string; className?:
 	children,
 }) {
 	const resolved = useResolvedPath(to)
-	const match = useMatch({ path: resolved.pathname, end: true })
+	const match = useMatch({ path: resolved.pathname, end: false })
 
 	return (
 		<li className="nav-item">

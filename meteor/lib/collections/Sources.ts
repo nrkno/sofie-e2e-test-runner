@@ -28,6 +28,8 @@ interface SourceBase {
 	tags: string[]
 	/** Images, tags, branches available on this Source */
 	refs: string[]
+	/** Last update timestamp */
+	updated?: number
 }
 
 /**

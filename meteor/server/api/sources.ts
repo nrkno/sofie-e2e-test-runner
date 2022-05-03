@@ -10,7 +10,7 @@ import {
 	Source,
 } from '../../lib/collections/Sources'
 import { Jobs } from 'meteor/wildhart:jobs'
-import { assertNever, literal } from '../../lib/lib'
+import { assertNever, getCurrentTime, literal } from '../../lib/lib'
 import { logger } from '../../lib/logging'
 import { purgeGit, scanGit } from './sources/git'
 import { MethodContextAPI } from '../../lib/api/methods'
@@ -20,6 +20,7 @@ import { protectString } from '../../lib/protectedString'
 import { registerClassToMeteorMethods } from '../methods'
 import { Meteor } from 'meteor/meteor'
 import { scanRegistry } from './sources/docker'
+import { check } from 'meteor/check'
 
 enum JobNames {
 	RefreshGit = 'refreshGit',
@@ -44,6 +45,7 @@ Jobs.register({
 			Sources.update(sourceId, {
 				$set: {
 					refs,
+					updated: getCurrentTime(),
 				},
 			})
 		} catch (err) {
@@ -64,6 +66,7 @@ Jobs.register({
 			Sources.update(sourceId, {
 				$set: {
 					refs,
+					updated: getCurrentTime(),
 				},
 			})
 		} catch (err) {
@@ -83,8 +86,7 @@ Jobs.register({
 
 const REFRESH_JOB_CONFIG = literal<Partial<Jobs.JobConfig>>({
 	in: {
-		// minutes: 5,
-		seconds: 10,
+		minutes: 3,
 	},
 	// don't start any other task in the queue, before the promise of the previous task resolves
 	awaitAsync: true,
@@ -94,6 +96,8 @@ const REFRESH_JOB_CONFIG = literal<Partial<Jobs.JobConfig>>({
 
 class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 	addDockerSource(sourceSpec: Omit<DockerRegistrySource, '_id' | 'refs'>): void {
+		check(sourceSpec, Object)
+
 		Sources.insert({
 			...sourceSpec,
 			type: sourceSpec.type,
@@ -102,11 +106,35 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 		})
 	}
 	addGitSource(sourceSpec: Omit<GitRepositorySource, '_id' | 'refs'>): void {
+		check(sourceSpec, Object)
+
 		Sources.insert({
 			...sourceSpec,
 			type: sourceSpec.type,
 			refs: [],
 			_id: protectString(Random.id()),
+		})
+	}
+	changeGitSource(
+		sourceId: GitRepositorySourceId,
+		sourceSpec: Partial<Omit<GitRepositorySource, '_id' | 'refs'>>
+	): void {
+		check(sourceId, String)
+		check(sourceSpec, Object)
+
+		Sources.update(sourceId, {
+			$set: sourceSpec,
+		})
+	}
+	changeDockerSource(
+		sourceId: DockerRegistrySourceId,
+		sourceSpec: Partial<Omit<DockerRegistrySource, '_id' | 'refs'>>
+	): void {
+		check(sourceId, String)
+		check(sourceSpec, Object)
+
+		Sources.update(sourceId, {
+			$set: sourceSpec,
 		})
 	}
 	removeSource(sourceId: SourceId): void {
@@ -116,20 +144,26 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 
 registerClassToMeteorMethods(SourcesAPIMethods, SourcesAPIClass, false)
 
-function refreshSourceJobs(source: Source, oldSource?: Source) {
+function refreshSourceJobs(source: Source, oldSource?: Source): void {
 	// Clean up any scheduled refresh jobs, so that we can set them up again from scratch
 	let job: Jobs.JobDocument | false = false
 	switch (source.type) {
 		case GitRepositorySourceType.Tests:
 			Jobs.clear('*', JobNames.RefreshGit, oldSource?._id ?? source._id)
+			if (!source.enabled) break
+
 			job = Jobs.run(JobNames.RefreshGit, source._id, REFRESH_JOB_CONFIG)
 			break
 		case DockerImageSourceType.Blueprints:
 			Jobs.clear('*', JobNames.RefreshDocker, oldSource?._id ?? source._id)
+			if (!source.enabled) break
+
 			job = Jobs.run(JobNames.RefreshDocker, source._id, REFRESH_JOB_CONFIG)
 			break
 		case DockerImageSourceType.Core:
 			Jobs.clear('*', JobNames.RefreshDocker, oldSource?._id ?? source._id)
+			if (!source.enabled) break
+
 			job = Jobs.run(JobNames.RefreshDocker, source._id, REFRESH_JOB_CONFIG)
 			break
 		default:
@@ -146,7 +180,7 @@ function refreshSourceJobs(source: Source, oldSource?: Source) {
 	Jobs.execute(job._id)
 }
 
-function removeSourceJobs(source: Source) {
+function removeSourceJobs(source: Source): void {
 	switch (source.type) {
 		case GitRepositorySourceType.Tests:
 			Jobs.clear('*', JobNames.RefreshGit, source._id)
@@ -168,13 +202,19 @@ function removeSourceJobs(source: Source) {
 
 // Set up the source Jobs when starting up
 Meteor.startup(() => {
-	Sources.find().forEach((source) => refreshSourceJobs(source))
-
 	Jobs.run(JobNames.CleanUpCompletedJobs, REFRESH_JOB_CONFIG)
 })
 
 // React to changes in the Sources collection and schedule jobs for refreshing the Sources
-Sources.find().observe({
+Sources.find(
+	{},
+	{
+		fields: {
+			updated: 0,
+			refs: 0,
+		},
+	}
+).observe({
 	added: refreshSourceJobs,
 	changed: refreshSourceJobs,
 	removed: removeSourceJobs,
