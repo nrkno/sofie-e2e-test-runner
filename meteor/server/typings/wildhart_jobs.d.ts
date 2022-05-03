@@ -60,7 +60,9 @@ declare module 'meteor/wildhart:jobs' {
 			failure(): void
 		}
 
-		type JobFunction = (this: JobThisType, ...args: any[]) => void
+		type JobFunction =
+			| ((this: JobThisType, ...args: any[]) => void)
+			| ((this: JobThisType, ...args: any[]) => Promise<void>)
 		type JobFunctions = Record<string, JobFunction>
 		type RegisterFn = (jobFunctions: JobFunctions) => void
 
@@ -74,7 +76,7 @@ declare module 'meteor/wildhart:jobs' {
 		function replicate(jobId: string, config: Partial<JobConfig>): string | null
 		function reschedule(jobId: string, config: Partial<JobConfig>): void
 		function remove(jobId: string): boolean
-		function clear(state: '*' | JobStatus | JobStatus[], jobName: string, ...args: any[]): number
+		function clear(state: '*' | JobStatus | JobStatus[], jobName?: string, ...args: any[]): number
 		function findOne(jobName: string, ...args: any[]): JobDocument
 		function count(jobName: string, ...args: any[]): number
 		function countPending(jobName: string, ...args: any[]): number

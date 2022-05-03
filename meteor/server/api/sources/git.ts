@@ -1,12 +1,17 @@
 import simpleGit, { CleanOptions } from 'simple-git'
+import rimraf from 'rimraf'
 import * as path from 'path'
 import { GitRepositorySourceId } from '../../../lib/collections/Sources'
 import { fsWriteFile, getTempDir } from '../../lib'
 import { unprotectString } from '../../../lib/protectedString'
 import * as fs from 'fs'
 
+function getGitRepositoryPath(sourceId: GitRepositorySourceId): string {
+	return path.join(getTempDir(), unprotectString(sourceId))
+}
+
 export async function scanGit(sourceId: GitRepositorySourceId, url: string, sshKey?: string): Promise<string[]> {
-	const dir = path.join(getTempDir(), unprotectString(sourceId))
+	const dir = getGitRepositoryPath(sourceId)
 
 	let GIT_SSH_COMMAND = ''
 	if (sshKey) {
@@ -31,13 +36,31 @@ export async function scanGit(sourceId: GitRepositorySourceId, url: string, sshK
 	}
 
 	if (isFresh) {
-		await git.clone(url, dir)
+		await git.clone(url, dir, { '--depth': 1 })
 	} else {
 		await git.clean(CleanOptions.FORCE)
+		await git.fetch(['--prune', '--prune-tags'])
 	}
 
 	const branches = await git.branch()
 	const tags = await git.tags()
 
 	return [...tags.all, ...Object.values(branches.branches).map((branch) => branch.name)]
+}
+
+export async function purgeGit(sourceId: GitRepositorySourceId): Promise<void> {
+	const dir = getGitRepositoryPath(sourceId)
+
+	if (fs.existsSync(dir)) {
+		return new Promise((resolve, reject) => {
+			rimraf(dir, (err) => {
+				if (err) {
+					reject(err)
+					return
+				}
+
+				resolve()
+			})
+		})
+	}
 }
