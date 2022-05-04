@@ -26,7 +26,9 @@ export const Navbar: React.FC = function Navbar() {
 				<CNavbarToggler onClick={() => setVisible(!visible)} />
 				<CCollapse className="navbar-collapse clearfix" visible={visible}>
 					<CNavbarNav className="me-auto mb-2 mb-lg-0">
-						<NavLink to="/">Dashboard</NavLink>
+						<NavLink to="/" exact>
+							Dashboard
+						</NavLink>
 						<NavLink to="/schedule">Schedule</NavLink>
 						<NavLink to="/reports">Reports</NavLink>
 						<NavLink to="/sources">Sources</NavLink>

@@ -100,6 +100,10 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 
 		Sources.insert({
 			...sourceSpec,
+			registry: sourceSpec.registry || undefined,
+			password: sourceSpec.password || undefined,
+			passwordSet: (sourceSpec.password || undefined) !== undefined,
+			username: sourceSpec.username || undefined,
 			type: sourceSpec.type,
 			refs: [],
 			_id: protectString(Random.id()),
@@ -110,6 +114,8 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 
 		Sources.insert({
 			...sourceSpec,
+			sshKey: sourceSpec.sshKey || undefined,
+			sshKeySet: (sourceSpec.sshKey || undefined) !== undefined,
 			type: sourceSpec.type,
 			refs: [],
 			_id: protectString(Random.id()),
@@ -124,6 +130,9 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 
 		Sources.update(sourceId, {
 			$set: sourceSpec,
+			$unset: {
+				sshKey: sourceSpec.sshKeySet === false ? true : undefined,
+			},
 		})
 	}
 	changeDockerSource(
@@ -135,6 +144,10 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 
 		Sources.update(sourceId, {
 			$set: sourceSpec,
+			$unset: {
+				registry: sourceSpec.registry || undefined === undefined ? true : undefined,
+				password: sourceSpec.passwordSet === false ? true : undefined,
+			},
 		})
 	}
 	removeSource(sourceId: SourceId): void {

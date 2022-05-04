@@ -2,15 +2,23 @@ import { CButton, CCol, CForm, CFormCheck, CFormInput, CFormLabel, CFormSelect, 
 import * as _ from 'underscore'
 import { useNavigate } from 'react-router-dom'
 import { Random } from 'meteor/random'
-import { Tracker } from 'meteor/tracker'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useParams } from 'react-router-dom'
 import { PubSub } from '../../../lib/api/pubsub'
-import { DockerImageSourceType, GitRepositorySourceType, Source, Sources } from '../../../lib/collections/Sources'
+import {
+	DockerImageSourceType,
+	GitRepositorySourceType,
+	Source,
+	SourceId,
+	Sources,
+} from '../../../lib/collections/Sources'
 import { assertNever, literal } from '../../../lib/lib'
 import { protectString } from '../../../lib/protectedString'
 import { useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorCall } from '../../../lib/api/methods'
+import { useOneCollectionObject } from '../lib/useCollectionObject'
+import { SourceGitEdit } from './SourceGitEdit'
+import { SourceDockerEdit } from './SourceDockerEdit'
 
 export const SourceEdit: React.FC = function SourceEdit() {
 	const params = useParams()
@@ -22,7 +30,17 @@ export const SourceEdit: React.FC = function SourceEdit() {
 		_id: id,
 	})
 
-	const [sourceObj, setSourceObj] = useState(
+	const [sourceObj, setSourceObj] = useOneCollectionObject(
+		Sources,
+		protectString<SourceId>(id),
+		{
+			fields: {
+				password: 0,
+				sshKey: 0,
+				updated: 0,
+				refs: 0,
+			},
+		},
 		literal<Source>({
 			_id: protectString(Random.id()),
 			type: GitRepositorySourceType.Tests,
@@ -30,26 +48,9 @@ export const SourceEdit: React.FC = function SourceEdit() {
 			refs: [],
 			tags: [],
 			url: '',
-		})
+		}),
+		ready
 	)
-	useEffect(() => {
-		if (ready && id) {
-			Tracker.nonreactive(() => {
-				const source = Sources.findOne(protectString(id), {
-					fields: {
-						password: 0,
-						sshKey: 0,
-						updated: 0,
-						refs: 0,
-					},
-				})
-				console.log(id, source)
-				if (source) {
-					setSourceObj(source)
-				}
-			})
-		}
-	}, [ready, id])
 
 	function onSubmit(e) {
 		if (id) {
@@ -79,6 +80,18 @@ export const SourceEdit: React.FC = function SourceEdit() {
 		}
 		e.preventDefault()
 		navigate('/sources')
+	}
+
+	function editSpecificSourceAttributes() {
+		switch (sourceObj.type) {
+			case GitRepositorySourceType.Tests:
+				return <SourceGitEdit sourceObj={sourceObj} setSourceObj={setSourceObj} />
+			case DockerImageSourceType.Blueprints:
+			case DockerImageSourceType.Core:
+				return <SourceDockerEdit sourceObj={sourceObj} setSourceObj={setSourceObj} />
+			default:
+				assertNever(sourceObj)
+		}
 	}
 
 	return (
@@ -159,6 +172,7 @@ export const SourceEdit: React.FC = function SourceEdit() {
 					/>
 				</CCol>
 			</CRow>
+			{editSpecificSourceAttributes()}
 			<CRow className="mb-3">
 				<CCol xs>
 					<CButton className="me-2" type="submit">

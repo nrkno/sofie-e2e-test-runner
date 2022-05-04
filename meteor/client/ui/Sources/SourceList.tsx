@@ -14,7 +14,7 @@ import {
 } from '@coreui/react'
 import { SourceId, Sources } from '../../../lib/collections/Sources'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { unprotectString } from '../../../lib/protectedString'
+import { protectString, unprotectString } from '../../../lib/protectedString'
 import { getSourceDescription } from './lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -43,6 +43,22 @@ export const SourceList: React.FC = function SourceList() {
 
 	function removeSource(sourceId: SourceId) {
 		MeteorCall.sources.removeSource(sourceId)
+	}
+
+	function onEdit(e: React.MouseEvent<HTMLButtonElement>) {
+		const sourceId = e.currentTarget.dataset['sourceId']
+		if (!sourceId) throw new Error('Source ID not found on element')
+		navigate(`${sourceId}`)
+	}
+
+	function onRemove(e: React.MouseEvent<HTMLButtonElement>) {
+		const sourceId = e.currentTarget.dataset['sourceId']
+		if (!sourceId) throw new Error('Source ID not found on element')
+		removeSource(protectString(sourceId))
+	}
+
+	function onAdd() {
+		navigate(`new`)
 	}
 
 	return (
@@ -99,10 +115,10 @@ export const SourceList: React.FC = function SourceList() {
 							</CTableDataCell>
 							<CTableDataCell>
 								<CButtonGroup className="float-end" role="group" size="sm">
-									<CButton variant="outline" title="Edit" onClick={() => navigate(`${source._id}`)}>
+									<CButton variant="outline" title="Edit" data-source-id={source._id} onClick={onEdit}>
 										<FontAwesomeIcon icon={faPencil} />
 									</CButton>
-									<CButton variant="outline" title="Remove" onClick={() => removeSource(source._id)}>
+									<CButton variant="outline" title="Remove" data-source-id={source._id} onClick={onRemove}>
 										<FontAwesomeIcon icon={faTrash} />
 									</CButton>
 								</CButtonGroup>
@@ -111,7 +127,7 @@ export const SourceList: React.FC = function SourceList() {
 					))}
 				<CTableRow>
 					<CTableDataCell colSpan={TABLE_COLS} className="text-center">
-						<CButton className="float-end" variant="outline" size="sm" onClick={() => navigate(`new`)}>
+						<CButton className="float-end" variant="outline" size="sm" onClick={onAdd}>
 							<FontAwesomeIcon icon={faPlus} /> Add
 						</CButton>
 					</CTableDataCell>
