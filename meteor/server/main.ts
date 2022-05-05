@@ -9,6 +9,7 @@ import './logging'
 // Import all files that register Meteor methods:
 import './api/various'
 import './api/sources'
+import './api/vessels'
 import './api/logger'
 
 // import all files that calls Meteor.startup:

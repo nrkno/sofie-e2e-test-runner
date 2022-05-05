@@ -126,7 +126,7 @@ export const SourceList: React.FC = function SourceList() {
 						</CTableRow>
 					))}
 				<CTableRow>
-					<CTableDataCell colSpan={TABLE_COLS} className="text-center">
+					<CTableDataCell colSpan={TABLE_COLS} className="border-bottom-0">
 						<CButton className="float-end" variant="outline" size="sm" onClick={onAdd}>
 							<FontAwesomeIcon icon={faPlus} /> Add
 						</CButton>

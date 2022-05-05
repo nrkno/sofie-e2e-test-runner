@@ -5,3 +5,4 @@
 import './collections/TestData'
 import './collections/WorkOrder'
 import './collections/Sources'
+import './collections/Vessels'

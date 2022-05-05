@@ -3,6 +3,7 @@ import { MeteorPromiseCall } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { VariousAPI, VariousAPIMethods } from './various'
 import { SourcesAPI, SourcesAPIMethods } from './sources'
+import { VesselsAPI, VesselsAPIMethods } from './vessels'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -11,10 +12,12 @@ export type MethodsBase = {
 interface IMeteorCall {
 	various: VariousAPI
 	sources: SourcesAPI
+	vessels: VesselsAPI
 }
 export const MeteorCall: IMeteorCall = {
 	various: makeMethods(VariousAPIMethods),
 	sources: makeMethods(SourcesAPIMethods),
+	vessels: makeMethods(VesselsAPIMethods),
 }
 function makeMethods(methods: object): any {
 	const o = {}

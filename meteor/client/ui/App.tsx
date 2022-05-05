@@ -9,6 +9,7 @@ import { GenericLayout } from './GenericLayout'
 import { NotFound } from './NotFound/NotFound'
 import { APP_NAME } from '../../lib/constants'
 import { Sources } from './Sources/Sources'
+import { Vessels } from './Vessels/Vessels'
 
 /*
 	CoreUI Docs:
@@ -29,6 +30,7 @@ export const App: React.FC = function App() {
 						<Route path="dashboard/*" element={<Dashboard />} />
 						<Route path="reports/*" element={<Reports />} />
 						<Route path="sources/*" element={<Sources />} />
+						<Route path="vessels/*" element={<Vessels />} />
 					</Route>
 					<Route path="*" element={<NotFound />} />
 				</Routes>

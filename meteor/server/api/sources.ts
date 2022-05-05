@@ -9,6 +9,7 @@ import {
 	DockerRegistrySource,
 	Source,
 } from '../../lib/collections/Sources'
+import * as _ from 'underscore'
 import { Jobs } from 'meteor/wildhart:jobs'
 import { assertNever, getCurrentTime, literal } from '../../lib/lib'
 import { logger } from '../../lib/logging'
@@ -21,6 +22,7 @@ import { registerClassToMeteorMethods } from '../methods'
 import { Meteor } from 'meteor/meteor'
 import { scanRegistry } from './sources/docker'
 import { check } from 'meteor/check'
+import { checkUserAccess } from '../security/methods'
 
 enum JobNames {
 	RefreshGit = 'refreshGit',
@@ -41,7 +43,7 @@ Jobs.register({
 		}
 
 		try {
-			const refs = await scanGit(source._id, source.url, source.sshKey)
+			const refs = await scanGit(source._id, source.url, source.privateKey)
 			Sources.update(sourceId, {
 				$set: {
 					refs,
@@ -97,6 +99,7 @@ const REFRESH_JOB_CONFIG = literal<Partial<Jobs.JobConfig>>({
 class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 	addDockerSource(sourceSpec: Omit<DockerRegistrySource, '_id' | 'refs'>): void {
 		check(sourceSpec, Object)
+		checkUserAccess(this)
 
 		Sources.insert({
 			...sourceSpec,
@@ -111,11 +114,12 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 	}
 	addGitSource(sourceSpec: Omit<GitRepositorySource, '_id' | 'refs'>): void {
 		check(sourceSpec, Object)
+		checkUserAccess(this)
 
 		Sources.insert({
 			...sourceSpec,
-			sshKey: sourceSpec.sshKey || undefined,
-			sshKeySet: (sourceSpec.sshKey || undefined) !== undefined,
+			privateKey: sourceSpec.privateKey || undefined,
+			privateKeySet: (sourceSpec.privateKey || undefined) !== undefined,
 			type: sourceSpec.type,
 			refs: [],
 			_id: protectString(Random.id()),
@@ -127,11 +131,12 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 	): void {
 		check(sourceId, String)
 		check(sourceSpec, Object)
+		checkUserAccess(this)
 
 		Sources.update(sourceId, {
-			$set: sourceSpec,
+			$set: _.omit(sourceSpec, ['_id']),
 			$unset: {
-				sshKey: sourceSpec.sshKeySet === false ? true : undefined,
+				sshKey: sourceSpec.privateKeySet === false ? true : undefined,
 			},
 		})
 	}
@@ -141,9 +146,10 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 	): void {
 		check(sourceId, String)
 		check(sourceSpec, Object)
+		checkUserAccess(this)
 
 		Sources.update(sourceId, {
-			$set: sourceSpec,
+			$set: _.omit(sourceSpec, ['_id']),
 			$unset: {
 				registry: sourceSpec.registry || undefined === undefined ? true : undefined,
 				password: sourceSpec.passwordSet === false ? true : undefined,
@@ -151,6 +157,9 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 		})
 	}
 	removeSource(sourceId: SourceId): void {
+		check(sourceId, String)
+		checkUserAccess(this)
+
 		Sources.remove(sourceId)
 	}
 }

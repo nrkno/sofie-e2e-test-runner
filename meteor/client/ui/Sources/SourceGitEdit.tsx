@@ -29,11 +29,11 @@ export const SourceGitEdit: React.FC<{
 				<CCol xs>
 					<CFormLabel>SSH Key</CFormLabel>
 					<CFormTextarea
-						value={sourceObj.sshKey}
+						value={sourceObj.privateKey}
 						onChange={(e) =>
 							setSourceObj({
 								...sourceObj,
-								sshKey: e.target.value,
+								privateKey: e.target.value,
 							})
 						}
 					/>
