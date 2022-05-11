@@ -281,6 +281,13 @@ export function last<T>(values: T[]): T {
 	return _.last(values) as T
 }
 
+export function unique<T>(array: T[]): T[] {
+	return array.filter((v, i, arr) => {
+		// compare index with first element index
+		return i == arr.indexOf(v)
+	})
+}
+
 const cacheResultCache: {
 	[name: string]: {
 		ttl: number

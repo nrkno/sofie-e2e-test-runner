@@ -11,6 +11,8 @@ import './api/various'
 import './api/sources'
 import './api/vessels'
 import './api/logger'
+import './api/documents'
+import './api/workArtifacts'
 
 // import all files that calls Meteor.startup:
 

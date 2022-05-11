@@ -2,9 +2,10 @@ import simpleGit, { CleanOptions } from 'simple-git'
 import rimraf from 'rimraf'
 import * as path from 'path'
 import { GitRepositorySourceId } from '../../../lib/collections/Sources'
-import { fsWriteFile, getTempDir } from '../../lib'
+import { getTempDir } from '../../lib'
 import { unprotectString } from '../../../lib/protectedString'
 import * as fs from 'fs'
+import { unique } from '../../../lib/lib'
 
 function getGitRepositoryPath(sourceId: GitRepositorySourceId): string {
 	return path.join(getTempDir(), unprotectString(sourceId))
@@ -15,10 +16,8 @@ export async function scanGit(sourceId: GitRepositorySourceId, url: string, sshK
 
 	let GIT_SSH_COMMAND = ''
 	if (sshKey) {
-		const sshKeyFilePath = path.join(getTempDir(), `${sourceId}_ssh_key`)
 		const sshKnownHosts = process.platform === 'win32' ? 'NUL' : '/dev/null'
-		fsWriteFile(sshKeyFilePath, sshKey)
-		GIT_SSH_COMMAND = `ssh -o UserKnownHostsFile=${sshKnownHosts} -o StrictHostKeyChecking=no -i ${sshKeyFilePath}`
+		GIT_SSH_COMMAND = `ssh -o UserKnownHostsFile=${sshKnownHosts} -o StrictHostKeyChecking=no -i ${sshKey}`
 	}
 
 	let isFresh = false
@@ -36,7 +35,7 @@ export async function scanGit(sourceId: GitRepositorySourceId, url: string, sshK
 	}
 
 	if (isFresh) {
-		await git.clone(url, dir, { '--depth': 1 })
+		await git.clone(url, dir)
 	} else {
 		await git.clean(CleanOptions.FORCE)
 		await git.fetch(['--prune', '--prune-tags'])
@@ -45,7 +44,10 @@ export async function scanGit(sourceId: GitRepositorySourceId, url: string, sshK
 	const branches = await git.branch()
 	const tags = await git.tags()
 
-	return [...tags.all, ...Object.values(branches.branches).map((branch) => branch.name)]
+	return [
+		...tags.all,
+		...unique(Object.values(branches.branches).map((branch) => branch.name.replace(/^remotes\/origin\//, ''))),
+	]
 }
 
 export async function purgeGit(sourceId: GitRepositorySourceId): Promise<void> {
