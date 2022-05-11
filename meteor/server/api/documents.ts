@@ -50,7 +50,7 @@ PickerPUT.route('/documents/:workOrderId/:fileName', (params, req, res) => {
 	fs.writeFile(filePath, req.body, (err) => {
 		if (err) {
 			logger.error(`Could not write file "${filePath}": ${err}`)
-			respondStatus(res, 501)
+			respondStatus(res, 500)
 			return
 		}
 
@@ -82,8 +82,9 @@ PickerGET.route('/documents/:workOrderId/:fileName', (params, req, res) => {
 		res.statusCode = 200
 		readStream.pipe(res)
 	})
-	readStream.on('error', () => {
-		respondStatus(res, 501)
+	readStream.on('error', (err) => {
+		logger.error(`Could not read file: "${filePath}": ${err}`)
+		respondStatus(res, 500, 'Could not read file')
 	})
 })
 
@@ -113,7 +114,7 @@ PickerDELETE.route('/documents/:workOrderId/:fileName', (params, req, res) => {
 
 	fs.unlink(filePath, (err) => {
 		if (err) {
-			respondStatus(res, 501)
+			respondStatus(res, 500, 'Could not delete file')
 		}
 
 		respondStatus(res, 200)

@@ -12,7 +12,6 @@ meteorPublish(PubSub.sources, (selector, _token) => {
 	return Sources.find(selector, {
 		fields: {
 			password: 0,
-			privateKey: 0,
 		},
 	})
 })

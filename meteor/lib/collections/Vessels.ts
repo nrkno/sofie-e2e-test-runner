@@ -14,7 +14,6 @@ export interface Vessel {
 	username: string
 	tags: string[]
 	privateKey?: string
-	privateKeySet: boolean
 	remoteDirectory: string
 }
 

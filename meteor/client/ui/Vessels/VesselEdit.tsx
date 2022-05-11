@@ -24,15 +24,10 @@ export const VesselEdit: React.FC = function VesselEdit() {
 	const [vesselObj, setVesselObj] = useOneCollectionObject(
 		Vessels,
 		protectString<VesselId>(id),
-		{
-			fields: {
-				privateKey: 0,
-			},
-		},
+		{},
 		literal<Vessel>({
 			_id: protectString(Random.id()),
 			host: '',
-			privateKeySet: false,
 			remoteDirectory: '',
 			username: '',
 			tags: [],

@@ -119,7 +119,6 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 		Sources.insert({
 			...sourceSpec,
 			privateKey: sourceSpec.privateKey || undefined,
-			privateKeySet: (sourceSpec.privateKey || undefined) !== undefined,
 			type: sourceSpec.type,
 			refs: [],
 			_id: protectString(Random.id()),
@@ -135,9 +134,6 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 
 		Sources.update(sourceId, {
 			$set: _.omit(sourceSpec, ['_id']),
-			$unset: {
-				sshKey: sourceSpec.privateKeySet === false ? true : undefined,
-			},
 		})
 	}
 	changeDockerSource(

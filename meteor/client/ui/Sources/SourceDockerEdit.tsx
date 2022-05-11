@@ -42,7 +42,7 @@ export const SourceDockerEdit: React.FC<{
 				<CCol xs>
 					<CFormLabel>Username (optional)</CFormLabel>
 					<CFormInput
-						value={sourceObj.username}
+						value={sourceObj.username ?? ''}
 						onChange={(e) =>
 							setSourceObj({
 								...sourceObj,
@@ -56,7 +56,7 @@ export const SourceDockerEdit: React.FC<{
 				<CCol xs>
 					<CFormLabel>Password (optional)</CFormLabel>
 					<CFormInput
-						value={sourceObj.password}
+						value={sourceObj.password ?? ''}
 						type="password"
 						onChange={(e) =>
 							setSourceObj({

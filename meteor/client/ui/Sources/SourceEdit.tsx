@@ -36,7 +36,6 @@ export const SourceEdit: React.FC = function SourceEdit() {
 		{
 			fields: {
 				password: 0,
-				privateKey: 0,
 				updated: 0,
 				refs: 0,
 			},

@@ -44,8 +44,6 @@ export interface GitRepositorySource extends SourceBase {
 	type: GitRepositorySourceType
 	/** SSH key, can only be read on the Server, is never published to the client */
 	privateKey?: string
-	/** Is there an SSH key set? */
-	privateKeySet?: boolean
 	/** Git URL: can be HTTPS for SSH (git@github.com:nrkno/...) */
 	url: string
 }
