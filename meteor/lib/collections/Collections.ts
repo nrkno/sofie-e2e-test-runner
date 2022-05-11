@@ -2,6 +2,7 @@
 export enum CollectionName {
 	TestData = 'TestData',
 	WorkOrders = 'WorkOrders',
+	WorkOrderOutputs = 'WorkOrderOutputs',
 	CronWorkOrders = 'CronWorkOrders',
 	Sources = 'Sources',
 	Vessels = 'Vessels',

@@ -1,4 +1,4 @@
-import { CCol, CFormInput, CFormLabel, CFormText, CFormTextarea, CRow } from '@coreui/react'
+import { CCol, CFormInput, CFormLabel, CFormText, CRow } from '@coreui/react'
 import React from 'react'
 import { GitRepositorySource, Source } from '../../../lib/collections/Sources'
 
@@ -28,7 +28,8 @@ export const SourceGitEdit: React.FC<{
 			<CRow className="mb-3">
 				<CCol xs>
 					<CFormLabel>SSH Key</CFormLabel>
-					<CFormTextarea
+					<CFormInput
+						type="text"
 						value={sourceObj.privateKey}
 						onChange={(e) =>
 							setSourceObj({
@@ -37,7 +38,7 @@ export const SourceGitEdit: React.FC<{
 							})
 						}
 					/>
-					<CFormText>SSH key to be used when connecting via SSH</CFormText>
+					<CFormText>File path to the SSH key to be used when connecting via SSH</CFormText>
 				</CCol>
 			</CRow>
 		</>

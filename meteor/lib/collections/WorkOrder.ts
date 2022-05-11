@@ -3,6 +3,7 @@ import { registerIndex } from '../database'
 import { ProtectedString } from '../protectedString'
 import { CollectionName } from './Collections'
 import { SourceId } from './Sources'
+import { Time } from '../lib'
 
 export type WorkOrderId = ProtectedString<'WorkOrderId'>
 
@@ -29,7 +30,9 @@ export interface WorkOrder {
 	blueprintSourceRef: string
 	testSuiteSource: SourceId
 	testSuiteSourceRef: string
+	created: Time
 	status: WorkOrderStatus
+	commandline: string
 	tags: string[]
 }
 

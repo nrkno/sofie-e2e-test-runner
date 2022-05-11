@@ -1,4 +1,4 @@
-import { CButton, CCol, CForm, CFormInput, CFormLabel, CFormText, CFormTextarea, CRow } from '@coreui/react'
+import { CButton, CCol, CForm, CFormInput, CFormLabel, CFormText, CRow } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import { Random } from 'meteor/random'
 import React from 'react'
@@ -116,7 +116,8 @@ export const VesselEdit: React.FC = function VesselEdit() {
 			<CRow className="mb-3">
 				<CCol xs>
 					<CFormLabel>SSH Key</CFormLabel>
-					<CFormTextarea
+					<CFormInput
+						type="text"
 						value={vesselObj.privateKey}
 						onChange={(e) =>
 							setVesselObj({
@@ -125,7 +126,7 @@ export const VesselEdit: React.FC = function VesselEdit() {
 							})
 						}
 					/>
-					<CFormText>SSH key to be used when connecting via SSH</CFormText>
+					<CFormText>File path to the SSH key to be used when connecting via SSH</CFormText>
 				</CCol>
 			</CRow>
 			<CRow className="mb-3">
