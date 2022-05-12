@@ -50,7 +50,6 @@ export interface WorkArtifactCSV extends WorkArtifactBase {
 
 export interface DocumentLinkArtifact {
 	url: string
-	path: string
 }
 
 export interface WorkArtifactImage extends WorkArtifactBase {

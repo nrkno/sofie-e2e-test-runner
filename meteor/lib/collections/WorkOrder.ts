@@ -32,7 +32,7 @@ export interface WorkOrder {
 	testSuiteSourceRef: string
 	created: Time
 	status: WorkOrderStatus
-	commandline: string
+	commandline: string[]
 	tags: string[]
 }
 

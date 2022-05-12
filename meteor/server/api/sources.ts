@@ -23,16 +23,7 @@ import { Meteor } from 'meteor/meteor'
 import { scanRegistry } from './sources/docker'
 import { check } from 'meteor/check'
 import { checkUserAccess } from '../security/methods'
-
-enum JobNames {
-	RefreshGit = 'refreshGit',
-	RefreshDocker = 'refreshDocker',
-	CleanUpCompletedJobs = 'cleanUpCompletedJobs',
-}
-
-Jobs.configure({
-	startupDelay: 1000,
-})
+import { JobNames } from '../lib/jobs'
 
 // Register jobs for refreshing various source types
 Jobs.register({
@@ -78,12 +69,6 @@ Jobs.register({
 		this.replicate(REFRESH_JOB_CONFIG)
 		this.success()
 	},
-	[JobNames.CleanUpCompletedJobs]: function () {
-		Jobs.clear('success')
-		Jobs.clear('failure')
-		this.replicate(REFRESH_JOB_CONFIG)
-		this.success()
-	},
 })
 
 const REFRESH_JOB_CONFIG = literal<Partial<Jobs.JobConfig>>({
@@ -97,9 +82,11 @@ const REFRESH_JOB_CONFIG = literal<Partial<Jobs.JobConfig>>({
 })
 
 class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
-	addDockerSource(sourceSpec: Omit<DockerRegistrySource, '_id' | 'refs'>): void {
+	addDockerSource(sourceSpec: Omit<DockerRegistrySource, '_id' | 'refs'>): DockerRegistrySourceId {
 		check(sourceSpec, Object)
 		checkUserAccess(this)
+
+		const newId = protectString<DockerRegistrySourceId>(Random.id())
 
 		Sources.insert({
 			...sourceSpec,
@@ -109,12 +96,16 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 			username: sourceSpec.username || undefined,
 			type: sourceSpec.type,
 			refs: [],
-			_id: protectString(Random.id()),
+			_id: newId,
 		})
+
+		return newId
 	}
-	addGitSource(sourceSpec: Omit<GitRepositorySource, '_id' | 'refs'>): void {
+	addGitSource(sourceSpec: Omit<GitRepositorySource, '_id' | 'refs'>): GitRepositorySourceId {
 		check(sourceSpec, Object)
 		checkUserAccess(this)
+
+		const newId = protectString<GitRepositorySourceId>(Random.id())
 
 		Sources.insert({
 			...sourceSpec,
@@ -123,6 +114,8 @@ class SourcesAPIClass extends MethodContextAPI implements SourcesAPI {
 			refs: [],
 			_id: protectString(Random.id()),
 		})
+
+		return newId
 	}
 	changeGitSource(
 		sourceId: GitRepositorySourceId,

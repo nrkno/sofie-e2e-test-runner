@@ -9,11 +9,11 @@ import { protectString } from '../../lib/protectedString'
 import { checkUserAccess } from '../security/methods'
 
 class VesselsAPIClass extends MethodContextAPI implements VesselsAPI {
-	addVessel(vesselSpec: Omit<Vessel, '_id'>): void {
+	addVessel(vesselSpec: Omit<Vessel, '_id'>): VesselId {
 		check(vesselSpec, Object)
 		checkUserAccess(this)
 
-		Vessels.insert({
+		return Vessels.insert({
 			...vesselSpec,
 			_id: protectString(Random.id()),
 		})

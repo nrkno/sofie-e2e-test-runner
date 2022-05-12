@@ -4,6 +4,7 @@
 
 import '../lib/main'
 // Set up environment
+import './lib/jobs'
 import './logging'
 
 // Import all files that register Meteor methods:
@@ -12,6 +13,7 @@ import './api/sources'
 import './api/vessels'
 import './api/logger'
 import './api/documents'
+import './api/workOrders'
 import './api/workArtifacts'
 
 // import all files that calls Meteor.startup:
