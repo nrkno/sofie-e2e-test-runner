@@ -15,5 +15,5 @@ export interface WorkOrdersAPI {
 export enum WorkOrdersAPIMethods {
 	'addWorkOrder' = 'workOrders.addWorkOrder',
 	'changeWorkOrder' = 'workOrders.changeWorkOrder',
-	'removeVeremoveWorkOrderssel' = 'workOrders.removeWorkOrder',
+	'removeWorkOrder' = 'workOrders.removeWorkOrder',
 }
