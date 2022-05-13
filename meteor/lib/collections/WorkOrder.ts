@@ -4,6 +4,7 @@ import { ProtectedString } from '../protectedString'
 import { CollectionName } from './Collections'
 import { SourceId } from './Sources'
 import { Time } from '../lib'
+import { VesselId } from './Vessels'
 
 export type WorkOrderId = ProtectedString<'WorkOrderId'>
 
@@ -31,6 +32,9 @@ export interface WorkOrder {
 	testSuiteSource: SourceId
 	testSuiteSourceRef: string
 	created: Time
+	started?: Time
+	finished?: Time
+	vesselId?: VesselId
 	status: WorkOrderStatus
 	commandline: string[]
 	tags: string[]

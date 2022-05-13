@@ -4,6 +4,9 @@ export enum PubSub {
 	testData = 'testData',
 	sources = 'sources',
 	vessels = 'vessels',
+	workOrders = 'workOrders',
+	workOrderOutputs = 'workOrderOutputs',
+	workArtifacts = 'workArtifacts',
 }
 
 export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {

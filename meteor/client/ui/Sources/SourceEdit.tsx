@@ -1,5 +1,5 @@
 import { CButton, CCol, CForm, CFormCheck, CFormInput, CFormLabel, CFormSelect, CRow } from '@coreui/react'
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { useNavigate } from 'react-router-dom'
 import { Random } from 'meteor/random'
 import React from 'react'
@@ -55,11 +55,11 @@ export const SourceEdit: React.FC = function SourceEdit() {
 		if (id) {
 			switch (sourceObj.type) {
 				case GitRepositorySourceType.Tests:
-					MeteorCall.sources.changeGitSource(sourceObj._id, _.omit(sourceObj, ['refs', 'updated']))
+					MeteorCall.sources.changeGitSource(sourceObj._id, _.omit(sourceObj, ['_id', 'refs', 'updated']))
 					break
 				case DockerImageSourceType.Blueprints:
 				case DockerImageSourceType.Core:
-					MeteorCall.sources.changeDockerSource(sourceObj._id, _.omit(sourceObj, ['refs', 'updated']))
+					MeteorCall.sources.changeDockerSource(sourceObj._id, _.omit(sourceObj, ['_id', 'refs', 'updated']))
 					break
 				default:
 					assertNever(sourceObj)
@@ -67,11 +67,11 @@ export const SourceEdit: React.FC = function SourceEdit() {
 		} else {
 			switch (sourceObj.type) {
 				case GitRepositorySourceType.Tests:
-					MeteorCall.sources.addGitSource(sourceObj)
+					MeteorCall.sources.addGitSource(_.omit(sourceObj, ['_id']))
 					break
 				case DockerImageSourceType.Blueprints:
 				case DockerImageSourceType.Core:
-					MeteorCall.sources.addDockerSource(sourceObj)
+					MeteorCall.sources.addDockerSource(_.omit(sourceObj, ['_id']))
 					break
 				default:
 					assertNever(sourceObj)

@@ -18,7 +18,7 @@ import { protectString, unprotectString } from '../../../lib/protectedString'
 import { getSourceDescription } from './lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPencil, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faPencil, faPlus, faTrash, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/api/methods'
 
@@ -99,7 +99,7 @@ export const SourceList: React.FC = function SourceList() {
 									{source.refs.length}
 								</CBadge>
 							</CTableHeaderCell>
-							<CTableDataCell></CTableDataCell>
+							<CTableDataCell>{source.enabled === false && <FontAwesomeIcon icon={faEyeSlash} />}</CTableDataCell>
 							<CTableDataCell>{source.type}</CTableDataCell>
 							<CTableDataCell>{getSourceDescription(source)}</CTableDataCell>
 							<CTableDataCell>

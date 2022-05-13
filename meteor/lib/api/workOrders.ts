@@ -1,6 +1,9 @@
 import { WorkOrder, WorkOrderId } from '../collections/WorkOrder'
 
-export type PublicWorkOrder = Omit<WorkOrder, '_id' | 'created' | 'status' | 'commandline'>
+export type PublicWorkOrder = Omit<
+	WorkOrder,
+	'_id' | 'created' | 'started' | 'finished' | 'status' | 'commandline' | 'vesselId'
+>
 
 export interface WorkOrdersAPI {
 	addWorkOrder(workOrderSpec: PublicWorkOrder): WorkOrderId

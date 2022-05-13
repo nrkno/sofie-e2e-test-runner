@@ -1,19 +1,20 @@
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import React, { useState, useEffect } from 'react'
+import { AsyncMongoCollection } from '../../../lib/collections/lib'
 import { literal } from '../../../lib/lib'
 import { ProtectedString } from '../../../lib/protectedString'
-import { FindOptions, MongoSelector, TransformedCollection } from '../../../lib/typings/meteor'
+import { FindOptions, MongoSelector } from '../../../lib/typings/meteor'
 
-export function useOneCollectionObject<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-	collection: TransformedCollection<Class, DBInterface>,
+export function useOneCollectionObject<DBInterface extends { _id: ProtectedString<any> }>(
+	collection: AsyncMongoCollection<DBInterface>,
 	selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'] | undefined,
 	options: Omit<FindOptions<DBInterface>, 'limit'>,
 	initial: DBInterface,
 	ready: boolean
 ): [DBInterface, React.Dispatch<React.SetStateAction<DBInterface>>]
-export function useOneCollectionObject<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-	collection: TransformedCollection<Class, DBInterface>,
+export function useOneCollectionObject<DBInterface extends { _id: ProtectedString<any> }>(
+	collection: AsyncMongoCollection<DBInterface>,
 	selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'] | undefined,
 	options: Omit<FindOptions<DBInterface>, 'limit'>,
 	initial: DBInterface | undefined,

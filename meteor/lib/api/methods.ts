@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { VariousAPI, VariousAPIMethods } from './various'
 import { SourcesAPI, SourcesAPIMethods } from './sources'
 import { VesselsAPI, VesselsAPIMethods } from './vessels'
+import { WorkOrdersAPI, WorkOrdersAPIMethods } from './workOrders'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -13,11 +14,13 @@ interface IMeteorCall {
 	various: VariousAPI
 	sources: SourcesAPI
 	vessels: VesselsAPI
+	workOrders: WorkOrdersAPI
 }
 export const MeteorCall: IMeteorCall = {
 	various: makeMethods(VariousAPIMethods),
 	sources: makeMethods(SourcesAPIMethods),
 	vessels: makeMethods(VesselsAPIMethods),
+	workOrders: makeMethods(WorkOrdersAPIMethods),
 }
 function makeMethods(methods: object): any {
 	const o = {}

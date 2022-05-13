@@ -10,6 +10,7 @@ import { useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorCall } from '../../../lib/api/methods'
 import { useOneCollectionObject } from '../lib/useCollectionObject'
 import { Vessel, VesselId, Vessels } from '../../../lib/collections/Vessels'
+import _ from 'underscore'
 
 export const VesselEdit: React.FC = function VesselEdit() {
 	const params = useParams()
@@ -37,9 +38,9 @@ export const VesselEdit: React.FC = function VesselEdit() {
 
 	function onSubmit(e) {
 		if (id) {
-			MeteorCall.vessels.changeVessel(protectString(id), vesselObj)
+			MeteorCall.vessels.changeVessel(protectString(id), _.omit(vesselObj, ['_id']))
 		} else {
-			MeteorCall.vessels.addVessel(vesselObj)
+			MeteorCall.vessels.addVessel(_.omit(vesselObj, ['_id']))
 		}
 		e.preventDefault()
 		navigate('/vessels')

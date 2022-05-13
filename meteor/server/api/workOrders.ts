@@ -1,3 +1,5 @@
+import path from 'path'
+import cp from 'child_process'
 import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import { MethodContextAPI } from '../../lib/api/methods'
@@ -11,20 +13,82 @@ import { WorkArtifacts } from '../../lib/collections/WorkArtifact'
 import { Jobs } from 'meteor/wildhart:jobs'
 import { JobNames } from '../lib/jobs'
 import { Meteor } from 'meteor/meteor'
-import { getCurrentTime, literal, sleep } from '../../lib/lib'
+import type { MongoSelector } from '../../lib/mongo'
+import { getCurrentTime, literal, Time } from '../../lib/lib'
 import { logger } from '../logging'
+import { Vessel, VesselId, Vessels } from '../../lib/collections/Vessels'
+
+const WORK_ORDER_TIMEOUT = 2 * 3600 * 1000 // 4hrs
 
 function createCommandLine(workOrder: PublicWorkOrder): string[] {
-	return ['dummyScript', workOrder.blueprintSourceRef, workOrder.coreSourceRef, workOrder.testSuiteSourceRef]
+	return [
+		'node',
+		path.join(process.cwd(), '../../../../../../scripts/dummyScript.js'),
+		workOrder.blueprintSourceRef,
+		workOrder.coreSourceRef,
+		workOrder.testSuiteSourceRef,
+	]
 }
 
-async function workOnWorkOrder(_workOrder: WorkOrder): Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed> {
-	await sleep(10000)
+async function workOnWorkOrder(workOrder: WorkOrder): Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed> {
+	return new Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed>((resolve, reject) => {
+		const command = workOrder.commandline[0]
+		const args = workOrder.commandline.slice(1)
 
-	return WorkOrderStatus.Passed
+		const workOrderId = workOrder._id
+
+		let sentResult = false
+
+		logger.debug(`Starting process: ${command} ${args.join(' ')}`)
+		const worker = cp.spawn(command, args, {
+			stdio: 'pipe',
+			timeout: WORK_ORDER_TIMEOUT,
+		})
+		// We expect the process to output text
+		worker.stdout.setEncoding('utf8')
+		worker.stderr.setEncoding('utf8')
+
+		worker.stdout.on(
+			'data',
+			Meteor.bindEnvironment((data) => {
+				onOutputFromCommand(workOrderId, data)
+			})
+		)
+		worker.stderr.on(
+			'data',
+			Meteor.bindEnvironment((data) => {
+				onOutputFromCommand(workOrderId, data, 'stderr')
+			})
+		)
+
+		worker.on(
+			'error',
+			Meteor.bindEnvironment((err) => {
+				if (sentResult) return
+				sentResult = true
+				logger.error(`Process for WorkOrder "${workOrderId}" execution failed with error: ${err}`)
+				reject(err)
+			})
+		)
+		worker.on(
+			'close',
+			Meteor.bindEnvironment((code) => {
+				if (sentResult) return
+				sentResult = true
+				if (code !== 0) {
+					logger.warn(`Process for WorkOrder "${workOrderId}" execution finished with code: ${code}`)
+					resolve(WorkOrderStatus.Failed)
+					return
+				}
+				logger.debug(`Process for WorkOrder "${workOrderId}" finished with code ${code}.`)
+				resolve(WorkOrderStatus.Passed)
+			})
+		)
+	})
 }
 
 function setWorkOrderStatus(workOrderId: WorkOrderId, status: WorkOrderStatus): void {
+	logger.silly(`setWorkOrderStatus "${workOrderId}": ${status}`)
 	WorkOrders.update(workOrderId, {
 		$set: {
 			status,
@@ -32,10 +96,29 @@ function setWorkOrderStatus(workOrderId: WorkOrderId, status: WorkOrderStatus): 
 	})
 }
 
-function _onOutputFromCommand(workOrderId: WorkOrderId, data: string): void {
+function setWorkOrderTimestamp(workOrderId: WorkOrderId, type: 'started' | 'finished', timestamp: Time): void {
+	logger.silly(`setWorkOrderTimestamp "${workOrderId}": ${type} ${timestamp}`)
+	WorkOrders.update(workOrderId, {
+		$set: {
+			[type]: timestamp,
+		},
+	})
+}
+
+function setWorkOrderVessel(workOrderId: WorkOrderId, vesselId: VesselId): void {
+	WorkOrders.update(workOrderId, {
+		$set: {
+			vesselId,
+		},
+	})
+}
+
+function onOutputFromCommand(workOrderId: WorkOrderId, data: string, type?: 'stdout' | 'stderr'): void {
+	logger.silly(`"${workOrderId}": ${data}`)
 	WorkOrderOutputs.insert({
 		_id: protectString(Random.id()),
 		data,
+		type,
 		timestamp: getCurrentTime(),
 		workOrderId,
 	})
@@ -50,21 +133,48 @@ class WorkOrdersAPIClass extends MethodContextAPI implements WorkOrdersAPI {
 
 		const commandline = createCommandLine(workOrderSpec)
 
-		return WorkOrders.insert({
+		const workOrderId = WorkOrders.insert({
 			...workOrderSpec,
 			commandline,
 			status: WorkOrderStatus.Waiting,
 			created: getCurrentTime(),
 			_id: newId,
 		})
+
+		const jobScheduled = Jobs.run(JobNames.StartOnWorkOrder, workOrderId, WORK_ORDER_JOB_CONFIG)
+		if (!jobScheduled) {
+			logger.error(`Job not scheduled for "${workOrderId}".`)
+		}
+
+		// If there are no other jobs pending in the Queue, start working immediately
+		if (jobScheduled && Jobs.countPending(JobNames.StartOnWorkOrder) === 1) {
+			Jobs.execute(jobScheduled._id)
+		}
+
+		return workOrderId
 	}
 	changeWorkOrder(workOrderId: WorkOrderId, workOrderSpec: Partial<PublicWorkOrder>): void {
 		check(workOrderId, String)
 		check(workOrderSpec, Object)
 		checkUserAccess(this)
 
+		const oldWorkOrder = WorkOrders.findOne(workOrderId)
+		if (!oldWorkOrder) {
+			throw new Meteor.Error(404, `Work order "${workOrderId}" not found.`)
+		}
+
+		const modifiedWorkOrder = {
+			...oldWorkOrder,
+			...workOrderSpec,
+		}
+
+		const commandline = createCommandLine(modifiedWorkOrder)
+
 		WorkOrders.update(workOrderId, {
-			$set: workOrderSpec,
+			$set: {
+				...workOrderSpec,
+				commandline,
+			},
 		})
 	}
 	removeWorkOrder(workOrderId: WorkOrderId): void {
@@ -78,8 +188,19 @@ class WorkOrdersAPIClass extends MethodContextAPI implements WorkOrdersAPI {
 		WorkArtifacts.remove({
 			workOrderId,
 		})
+
+		const jobsCleared = Jobs.clear('pending', JobNames.StartOnWorkOrder, workOrderId)
+		logger.debug(`Removed WorkOrder "${workOrderId}", cleared ${jobsCleared} job assigned to it.`)
 	}
 }
+
+const WORK_ORDER_JOB_CONFIG = literal<Partial<Jobs.JobConfig>>({
+	in: {
+		seconds: 3,
+	},
+	// don't queue any new tasks, if there is a task on the same queue and with same arguments
+	singular: true,
+})
 
 const CLEAN_UP_JOB_CONFIG = literal<Partial<Jobs.JobConfig>>({
 	in: {
@@ -101,16 +222,66 @@ Jobs.register({
 			return
 		}
 
+		if (workOrder.status === WorkOrderStatus.Cancelled) {
+			logger.warn(`Run for WorkOrder "${workOrderId}" was cancelled.`)
+			this.success()
+			return
+		}
+
+		if (workOrder.status !== WorkOrderStatus.Waiting) {
+			throw new Meteor.Error(
+				501,
+				`Trying to start work on WorkOrder "${workOrderId}", but it's status was: "${workOrder.status}"`
+			)
+		}
+
+		const busyVessels = WorkOrders.find(
+			{
+				status: WorkOrderStatus.Working,
+			},
+			{
+				fields: {
+					vesselId: 1,
+				},
+			}
+		).map((partialWorkOrder) => partialWorkOrder.vesselId)
+
+		let vesselSelector: MongoSelector<Vessel> = {}
+		if (busyVessels.length > 0) {
+			vesselSelector = {
+				_id: {
+					$nin: busyVessels,
+				},
+			}
+		}
+		const targetVessel = Vessels.findOne(vesselSelector)
+
+		if (!targetVessel) {
+			logger.warning(`No target vessel could be found for WorkOrder "${workOrderId}", retry in 5 minutes`)
+			this.reschedule({
+				in: {
+					minutes: 5,
+				},
+			})
+			return
+		}
+
+		setWorkOrderVessel(workOrderId, targetVessel._id)
+
+		logger.silly(`Starting work on "${workOrderId}" on Vessel "${targetVessel.host}"`)
 		setWorkOrderStatus(workOrderId, WorkOrderStatus.Working)
+		setWorkOrderTimestamp(workOrderId, 'started', getCurrentTime())
 
 		try {
 			const passedOrFailed = await workOnWorkOrder(workOrder)
 
 			setWorkOrderStatus(workOrderId, passedOrFailed)
 		} catch (e) {
-			setWorkOrderStatus(workOrderId, WorkOrderStatus.Failed)
+			setWorkOrderStatus(workOrderId, WorkOrderStatus.FailedToRun)
 		}
 
+		logger.silly(`Finished work on "${workOrderId}"`)
+		setWorkOrderTimestamp(workOrderId, 'finished', getCurrentTime())
 		this.success()
 	},
 	[JobNames.CleanUpOrphanedOutputsAndArtifacts]: async function (): Promise<void> {

@@ -11,6 +11,8 @@ export interface WorkOrderOutput {
 	_id: WorkOrderOutputId
 	workOrderId: WorkOrderId
 	timestamp: Time
+	/** STDOUT assumed, if not specified */
+	type?: 'stderr' | 'stdout'
 	data: string
 }
 

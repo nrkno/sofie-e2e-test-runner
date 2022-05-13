@@ -19,7 +19,7 @@ import { faPencil, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/api/methods'
 
-const TABLE_COLS = 2
+const TABLE_COLS = 3
 
 export const VesselList: React.FC = function VesselList() {
 	const vessels = useTracker(

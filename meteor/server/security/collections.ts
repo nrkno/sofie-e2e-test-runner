@@ -2,7 +2,9 @@
 import { Sources } from '../../lib/collections/Sources'
 import { TestData } from '../../lib/collections/TestData'
 import { Vessels } from '../../lib/collections/Vessels'
+import { WorkArtifacts } from '../../lib/collections/WorkArtifact'
 import { WorkOrders } from '../../lib/collections/WorkOrder'
+import { WorkOrderOutputs } from '../../lib/collections/WorkOrderOutput'
 
 // Set up direct collection write access
 
@@ -21,7 +23,7 @@ TestData.allow({
 	},
 })
 
-WorkOrders.allow({
+const denyAllModifications = {
 	insert() {
 		return false
 	},
@@ -31,28 +33,10 @@ WorkOrders.allow({
 	remove() {
 		return false
 	},
-})
+}
 
-Sources.allow({
-	insert() {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-
-Vessels.allow({
-	insert() {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
+WorkOrders.allow(denyAllModifications)
+Sources.allow(denyAllModifications)
+Vessels.allow(denyAllModifications)
+WorkOrderOutputs.allow(denyAllModifications)
+WorkArtifacts.allow(denyAllModifications)
