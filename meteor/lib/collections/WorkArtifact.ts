@@ -1,4 +1,5 @@
 import { registerIndex } from '../database'
+import { Time } from '../lib'
 import { ProtectedString } from '../protectedString'
 import { CollectionName } from './Collections'
 import { createMongoCollection } from './lib'
@@ -12,6 +13,7 @@ export enum ArtifactType {
 	NumberArray = 'application/numbers-array+json',
 	Boolean = 'application/boolean+json',
 	PassFail = 'application/string+json',
+	MochawesomeReport = 'application/mochawesome+json',
 	CSV = 'text/csv',
 	Image = 'image/png',
 	Video = 'video/mp4',
@@ -26,6 +28,7 @@ interface WorkArtifactBase {
 	tags: string[]
 	type: ArtifactType
 	artifact: any
+	created: Time
 }
 
 export interface WorkArtifactNumberArray extends WorkArtifactBase {
@@ -72,6 +75,11 @@ export interface WorkArtifactJSON extends WorkArtifactBase {
 	artifact: object
 }
 
+export interface WorkArtifactMochawesome extends WorkArtifactBase {
+	type: ArtifactType.MochawesomeReport
+	artifact: object
+}
+
 export type WorkArtifact =
 	| WorkArtifactNumberArray
 	| WorkArtifactBoolean
@@ -81,6 +89,7 @@ export type WorkArtifact =
 	| WorkArtifactVideo
 	| WorkArtifactBinary
 	| WorkArtifactJSON
+	| WorkArtifactMochawesome
 
 export const WorkArtifacts = createMongoCollection<WorkArtifact>(CollectionName.WorkArtifacts)
 registerIndex(WorkArtifacts, {

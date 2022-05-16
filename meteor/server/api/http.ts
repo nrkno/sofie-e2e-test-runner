@@ -28,7 +28,8 @@ export const PickerPUT = Picker.filter((req) => req.method === 'PUT')
 PickerPUT.middleware(
 	bodyParser.raw({
 		// accept application/octet-stream, image/* and video/*
-		type: (req) => req.headers['content-type']?.match(/^application\/octet-stream(?:$|;\s)|^image\/|^video\//),
+		type: (req) =>
+			req.headers['content-type']?.match(/^application\/octet-stream(?:$|;\s)|^image\/|^video\/|^text\//),
 		limit: '200mb', // Arbitrary limit
 	})
 )

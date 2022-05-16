@@ -17,13 +17,15 @@ import type { MongoSelector } from '../../lib/mongo'
 import { getCurrentTime, literal, Time } from '../../lib/lib'
 import { logger } from '../logging'
 import { Vessel, VesselId, Vessels } from '../../lib/collections/Vessels'
+import { catchArtifactsInOutput } from './workArtifacts'
+import { Env } from '../env'
 
 const WORK_ORDER_TIMEOUT = 2 * 3600 * 1000 // 4hrs
 
 function createCommandLine(workOrder: PublicWorkOrder): string[] {
 	return [
 		'node',
-		path.join(process.cwd(), '../../../../../../scripts/dummyScript.js'),
+		path.join(Env.EXECUTOR_CWD, 'dummyScript.js'),
 		workOrder.blueprintSourceRef,
 		workOrder.coreSourceRef,
 		workOrder.testSuiteSourceRef,
@@ -43,6 +45,7 @@ async function workOnWorkOrder(workOrder: WorkOrder): Promise<WorkOrderStatus.Pa
 		const worker = cp.spawn(command, args, {
 			stdio: 'pipe',
 			timeout: WORK_ORDER_TIMEOUT,
+			cwd: Env.EXECUTOR_CWD,
 		})
 		// We expect the process to output text
 		worker.stdout.setEncoding('utf8')
@@ -51,13 +54,13 @@ async function workOnWorkOrder(workOrder: WorkOrder): Promise<WorkOrderStatus.Pa
 		worker.stdout.on(
 			'data',
 			Meteor.bindEnvironment((data) => {
-				onOutputFromCommand(workOrderId, data)
+				onOutputFromCommand(workOrderId, data, workOrder.tags)
 			})
 		)
 		worker.stderr.on(
 			'data',
 			Meteor.bindEnvironment((data) => {
-				onOutputFromCommand(workOrderId, data, 'stderr')
+				onOutputFromCommand(workOrderId, data, workOrder.tags, 'stderr')
 			})
 		)
 
@@ -113,8 +116,14 @@ function setWorkOrderVessel(workOrderId: WorkOrderId, vesselId: VesselId): void 
 	})
 }
 
-function onOutputFromCommand(workOrderId: WorkOrderId, data: string, type?: 'stdout' | 'stderr'): void {
+function onOutputFromCommand(
+	workOrderId: WorkOrderId,
+	data: string,
+	workOrderTags: string[],
+	type?: 'stdout' | 'stderr'
+): void {
 	logger.silly(`"${workOrderId}": ${data}`)
+	catchArtifactsInOutput(workOrderId, data, workOrderTags)
 	WorkOrderOutputs.insert({
 		_id: protectString(Random.id()),
 		data,
