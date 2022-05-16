@@ -21,6 +21,7 @@ import { catchArtifactsInOutput } from './workArtifacts'
 import { Env } from '../env'
 
 const WORK_ORDER_TIMEOUT = 2 * 3600 * 1000 // 4hrs
+const VESSEL_RETRY = 60 //seconds
 
 function createCommandLine(workOrder: PublicWorkOrder): string[] {
 	return [
@@ -266,10 +267,12 @@ Jobs.register({
 		const targetVessel = Vessels.findOne(vesselSelector)
 
 		if (!targetVessel) {
-			logger.warning(`No target vessel could be found for WorkOrder "${workOrderId}", retry in 5 minutes`)
+			logger.warn(
+				`No target vessel could be found for WorkOrder "${workOrderId}", retry in ${VESSEL_RETRY} seconds`
+			)
 			this.reschedule({
 				in: {
-					minutes: 5,
+					seconds: VESSEL_RETRY,
 				},
 			})
 			return
