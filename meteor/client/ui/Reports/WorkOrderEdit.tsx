@@ -12,11 +12,12 @@ import { WorkOrder, WorkOrderId, WorkOrders, WorkOrderStatus } from '../../../li
 import _ from 'underscore'
 import { DockerImageSourceType, GitRepositorySourceType, Source, Sources } from '../../../lib/collections/Sources'
 import { WorkOrderOutput } from './WorkOrderOutput'
+import { WorkArtifactList } from './../WorkArtifacts/WorkArtifactList'
 
 function OptionsFromSources({ sources, separator }: { sources: Source[]; separator?: string }) {
 	return (
 		<>
-			<option disabled value={separator ?? ':'} selected>
+			<option disabled value={separator ?? ':'}>
 				Not set
 			</option>
 			{sources.map((source) => (
@@ -40,9 +41,6 @@ export const WorkOrderEdit: React.FC = function WorkOrderEdit() {
 
 	const workOrderReady = useSubscription(PubSub.workOrders, {
 		_id: id,
-	})
-	const _artifactsReady = useSubscription(PubSub.workArtifacts, {
-		workOrderId: id,
 	})
 	const _sourcesReady = useSubscription(PubSub.sources, {})
 
@@ -186,6 +184,7 @@ export const WorkOrderEdit: React.FC = function WorkOrderEdit() {
 				</CRow>
 			)}
 			{hasOutput && <WorkOrderOutput commandline={workOrderObj.commandline} workOrderId={workOrderObj._id} />}
+			{hasOutput && <WorkArtifactList workOrderId={workOrderObj._id} />}
 		</CForm>
 	)
 }
