@@ -35,7 +35,7 @@ function onArtifact(workOrderId: WorkOrderId, output: string, name?: string, tag
 }
 
 const ARTIFACT_REGEX =
-	/::set-output\s+(?:name=(?<name>.+)::)?(?:tags=(?<tags>.+)::)?(?:type=(?<type>.+)::)?(?<output>[\s\S]+?)((?=\n\n)|(?=$)|(?=\n::set-output))/gim
+	/::set-output\s+(?:name=(?<name>.+?)::)?(?:tags=(?<tags>.+?)::)?(?:type=(?<type>.+?)::)?(?<output>[\s\S]+?)((?=\n\n)|(?=$)|(?=\n::set-output))/gim
 
 export function catchArtifactsInOutput(workOrderId: WorkOrderId, data: string, workOrderTags: string[]) {
 	if (data.indexOf('::set-output') === -1) {
