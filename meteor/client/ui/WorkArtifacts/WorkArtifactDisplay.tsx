@@ -1,4 +1,6 @@
 import { CContainer } from '@coreui/react'
+import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import { ArtifactType, WorkArtifact } from '../../../lib/collections/WorkArtifact'
 import { assertNever } from '../../../lib/lib'
@@ -27,7 +29,19 @@ export const WorkArtifactDisplay: React.FC<{ artifact: WorkArtifact }> = functio
 				</CContainer>
 			)
 		case ArtifactType.PassFail:
-			return <p className="fs-1">{artifact.artifact === 'pass' ? 'Pass' : 'Fail'}</p>
+			return (
+				<p className="fs-1">
+					{artifact.artifact === 'pass' ? (
+						<>
+							<FontAwesomeIcon icon={faCheck} className="text-success" /> Pass
+						</>
+					) : (
+						<>
+							<FontAwesomeIcon icon={faXmark} className="text-danger" /> Fail
+						</>
+					)}
+				</p>
+			)
 		case ArtifactType.Boolean:
 			return <p className="fs-1">{artifact.artifact === true ? 'True' : 'False'}</p>
 		case ArtifactType.Video:

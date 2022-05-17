@@ -8,6 +8,9 @@ import { Meteor } from 'meteor/meteor'
 import { protectString } from '../../lib/protectedString'
 import { detectType, generateObjectToStore, isOutputPath } from './workArtifacts/utils'
 import { getCurrentTime } from '../../lib/lib'
+import { PickerGET } from './http'
+import { ServerResponse } from 'http'
+import { check, Match } from 'meteor/check'
 
 function onArtifact(workOrderId: WorkOrderId, output: string, name?: string, tags?: string[], type?: string) {
 	const detectedType = detectType(output, type)
@@ -57,6 +60,30 @@ export function catchArtifactsInOutput(workOrderId: WorkOrderId, data: string, w
 		}
 	} while (match)
 }
+
+function respondStatus(res: ServerResponse, status: number, body?: string) {
+	res.statusCode = status
+	res.end(body)
+}
+
+PickerGET.route('/artifacts/:filter', (params, req, res) => {
+	const filter = decodeURIComponent(params['filter'])
+	if (!filter) {
+		respondStatus(res, 400, 'Filter is missing')
+		return
+	}
+	const parsedFilter = JSON.parse(filter)
+	check(parsedFilter, Match.OneOf(Object, String))
+
+	const workArtifacts = WorkArtifacts.find(parsedFilter as any, {
+		sort: {
+			created: 1,
+		},
+	}).fetch()
+
+	res.setHeader('content-type', 'application/json')
+	res.end(JSON.stringify(workArtifacts))
+})
 
 WorkArtifacts.find({}).observe({
 	removed(artifact) {
