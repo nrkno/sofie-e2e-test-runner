@@ -1,4 +1,3 @@
-import path from 'path'
 import cp from 'child_process'
 import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
@@ -19,28 +18,49 @@ import { logger } from '../logging'
 import { Vessel, VesselId, Vessels } from '../../lib/collections/Vessels'
 import { catchArtifactsInOutput } from './workArtifacts'
 import { Env } from '../env'
+import { checkoutGitRepo, getGitRepositoryPath } from './sources/git'
+import { GitRepositorySource, GitRepositorySourceId, SourceId, Sources } from '../../lib/collections/Sources'
 
 const WORK_ORDER_TIMEOUT = 2 * 3600 * 1000 // 4hrs
 const VESSEL_RETRY = 60 //seconds
 
 function createCommandLine(workOrder: PublicWorkOrder): string[] {
 	return [
+		// 'SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt',
 		'node',
-		path.join(Env.EXECUTOR_CWD, 'dummyScript.js'),
-		workOrder.blueprintSourceRef,
+		'--use-openssl-ca',
+		'dist/main.js',
+		'--core',
 		workOrder.coreSourceRef,
-		workOrder.testSuiteSourceRef,
+		'--playout',
+		workOrder.coreSourceRef,
+		'--ingest',
+		workOrder.coreSourceRef,
+		'--testRepoFolder',
+		getGitRepositoryPath(workOrder.testSuiteSource as any), // wtf typescript?
 	]
 }
 
+async function checkoutTestsRepository(sourceId: SourceId, ref: string) {
+	const source = Sources.findOne(sourceId) as GitRepositorySource | undefined
+	if (!source) {
+		throw new Error(`Source not found: "${sourceId}"`)
+	}
+
+	return checkoutGitRepo(source._id, source.url, ref, source.privateKey)
+}
+
 async function workOnWorkOrder(workOrder: WorkOrder): Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed> {
-	return new Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed>((resolve, reject) => {
+	return new Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed>(async (resolve, reject) => {
 		const command = workOrder.commandline[0]
 		const args = workOrder.commandline.slice(1)
 
 		const workOrderId = workOrder._id
 
 		let sentResult = false
+
+		logger.debug(`Checking out tests reposistory..`)
+		await checkoutTestsRepository(workOrder.testSuiteSource, workOrder.testSuiteSourceRef)
 
 		logger.debug(`Starting process: ${command} ${args.join(' ')}`)
 		const worker = cp.spawn(command, args, {

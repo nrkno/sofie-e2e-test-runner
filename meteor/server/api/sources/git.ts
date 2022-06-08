@@ -7,8 +7,42 @@ import { unprotectString } from '../../../lib/protectedString'
 import * as fs from 'fs'
 import { unique } from '../../../lib/lib'
 
-function getGitRepositoryPath(sourceId: GitRepositorySourceId): string {
+export function getGitRepositoryPath(sourceId: GitRepositorySourceId): string {
 	return path.join(getTempDir(), unprotectString(sourceId))
+}
+
+export async function checkoutGitRepo(sourceId: GitRepositorySourceId, url: string, ref: string, sshKey?: string) {
+	const dir = getGitRepositoryPath(sourceId)
+
+	let GIT_SSH_COMMAND = ''
+	if (sshKey) {
+		const sshKnownHosts = process.platform === 'win32' ? 'NUL' : '/dev/null'
+		GIT_SSH_COMMAND = `ssh -o UserKnownHostsFile=${sshKnownHosts} -o StrictHostKeyChecking=no -i ${sshKey}`
+	}
+
+	let isFresh = false
+	if (!fs.existsSync(dir)) {
+		await fs.promises.mkdir(dir, { recursive: true })
+		isFresh = true
+	}
+
+	let git = simpleGit({
+		baseDir: dir,
+	})
+
+	if (sshKey) {
+		git = git.env('GIT_SSH_COMMAND', GIT_SSH_COMMAND)
+	}
+
+	if (isFresh) {
+		await git.clone(url, dir)
+	} else {
+		await git.clean(CleanOptions.FORCE)
+		await git.fetch(['--prune', '--prune-tags'])
+	}
+
+	await git.checkout(ref)
+	await git.pull() // just in case we are behind
 }
 
 export async function scanGit(sourceId: GitRepositorySourceId, url: string, sshKey?: string): Promise<string[]> {
@@ -22,7 +56,7 @@ export async function scanGit(sourceId: GitRepositorySourceId, url: string, sshK
 
 	let isFresh = false
 	if (!fs.existsSync(dir)) {
-		await fs.promises.mkdir(dir)
+		await fs.promises.mkdir(dir, { recursive: true })
 		isFresh = true
 	}
 
