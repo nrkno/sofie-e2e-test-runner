@@ -100,11 +100,23 @@ jobs:
               DOCKERHUB_PUBLISH="1"
               IMAGES="${{ secrets.DOCKERHUB_IMAGE_PREFIX }}e2e-test-runner:$DOCKER_TAG"$'\n'$IMAGES
             fi
+
+            # If instructed, push to github packages
+            if [ -z "${{ secrets.GH_PACKAGES_ENABLED }}" ] || [ -z "${{ secrets.GITHUB_TOKEN }}" ]
+            then
+              GHCR_PUBLISH="0"
+            else
+              GHCR_PUBLISH="1"
+              IMAGES="ghcr.io/${{ github.repository }}:$DOCKER_TAG"$'\n'$IMAGES
+            fi
+
             # debug output
             echo dockerhub-publish $DOCKERHUB_PUBLISH
+            echo ghcr-publish $GHCR_PUBLISH
             echo images $IMAGES
             echo ::set-output name=images::"$IMAGES"
             echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
+            echo ::set-output name=ghcr-publish::"$GHCR_PUBLISH"
           else
             echo "Skipping docker build"
           fi
@@ -119,10 +131,6 @@ jobs:
         if: ${{ steps.image-tags.outputs.images }}
         run: |
           yarn install
-      - name: Build libs
-        if: ${{ steps.image-tags.outputs.images }}
-        run: |
-          yarn build:packages
       - name: Persist Built Version information
         if: ${{ steps.image-tags.outputs.images }}
         run: |
@@ -147,13 +155,13 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      # TODO - do we want this?
-      # - name: Login to GitHub Container Registry
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.repository_owner }}
-      #     password: ${{ secrets.CR_PAT }}
+      - name: Login to GitHub Container Registry
+        if: steps.image-tags.outputs.images && steps.image-tags.outputs.ghcr-publish == '1'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v2
         if: ${{ steps.image-tags.outputs.images }}
