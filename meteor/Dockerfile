@@ -19,7 +19,7 @@ WORKDIR /opt/bundle/programs/server/
 RUN npm install
 
 # DEPLOY IMAGE
-FROM node:14.18-slim
+FROM node:14.18
 COPY --from=0 /opt/bundle /opt/core
 COPY meteor/docker-entrypoint.sh /opt
 
