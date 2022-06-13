@@ -35,10 +35,10 @@ export async function checkoutGitRepo(sourceId: GitRepositorySourceId, url: stri
 	}
 
 	if (isFresh) {
-		await git.clone(url, dir)
+		await git.clone(url, dir, ['--mirror'])
 	} else {
 		await git.clean(CleanOptions.FORCE)
-		await git.fetch(['--prune', '--prune-tags'])
+		await git.fetch(['--prune'])
 	}
 
 	await git.checkout(ref)
