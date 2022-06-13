@@ -69,10 +69,10 @@ export async function scanGit(sourceId: GitRepositorySourceId, url: string, sshK
 	}
 
 	if (isFresh) {
-		await git.clone(url, dir)
+		await git.clone(url, dir, ['--mirror'])
 	} else {
 		await git.clean(CleanOptions.FORCE)
-		await git.fetch(['--prune', '--prune-tags'])
+		await git.fetch(['--prune'])
 	}
 
 	const branches = await git.branch()
