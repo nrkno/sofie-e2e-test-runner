@@ -6,6 +6,7 @@ import React from 'react'
 import { useParams } from 'react-router-dom'
 import { PubSub } from '../../../lib/api/pubsub'
 import {
+	CoreDockerRegistrySource,
 	DockerImageSourceType,
 	GitRepositorySourceType,
 	Source,
@@ -19,6 +20,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { useOneCollectionObject } from '../lib/useCollectionObject'
 import { SourceGitEdit } from './SourceGitEdit'
 import { SourceDockerEdit } from './SourceDockerEdit'
+import { SourceCoreEdit } from './SourceCoreEdit'
 
 export const SourceEdit: React.FC = function SourceEdit() {
 	const params = useParams()
@@ -86,8 +88,10 @@ export const SourceEdit: React.FC = function SourceEdit() {
 			case GitRepositorySourceType.Tests:
 				return <SourceGitEdit sourceObj={sourceObj} setSourceObj={setSourceObj} />
 			case DockerImageSourceType.Blueprints:
-			case DockerImageSourceType.Core:
 				return <SourceDockerEdit sourceObj={sourceObj} setSourceObj={setSourceObj} />
+			case DockerImageSourceType.Core:
+				return <SourceCoreEdit sourceObj={sourceObj as CoreDockerRegistrySource} setSourceObj={setSourceObj} />
+			// return <SourceDockerEdit sourceObj={sourceObj} setSourceObj={setSourceObj} />
 			default:
 				assertNever(sourceObj)
 		}

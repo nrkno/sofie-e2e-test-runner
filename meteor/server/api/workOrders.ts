@@ -19,23 +19,24 @@ import { Vessel, VesselId, Vessels } from '../../lib/collections/Vessels'
 import { catchArtifactsInOutput } from './workArtifacts'
 import { Env } from '../env'
 import { checkoutGitRepo, getGitRepositoryPath } from './sources/git'
-import { GitRepositorySource, GitRepositorySourceId, SourceId, Sources } from '../../lib/collections/Sources'
+import { CoreDockerRegistrySource, GitRepositorySource, SourceId, Sources } from '../../lib/collections/Sources'
 
 const WORK_ORDER_TIMEOUT = 2 * 3600 * 1000 // 4hrs
 const VESSEL_RETRY = 60 //seconds
 
-function createCommandLine(workOrder: PublicWorkOrder): string[] {
+function createCommandLine(workOrder: PublicWorkOrder, coreSource: CoreDockerRegistrySource): string[] {
+	const registry = coreSource.registry ? coreSource.registry + '/' : ''
 	return [
 		// 'SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt',
 		'node',
 		'--use-openssl-ca',
 		'dist/main.js',
 		'--core',
-		workOrder.coreSourceRef,
+		registry + coreSource.repo + ':' + workOrder.coreSourceRef,
 		'--playout',
-		workOrder.coreSourceRef,
+		registry + coreSource.playoutImage + ':' + workOrder.coreSourceRef,
 		'--ingest',
-		workOrder.coreSourceRef,
+		registry + coreSource.ingestImage + ':' + workOrder.coreSourceRef,
 		'--testRepoFolder',
 		getGitRepositoryPath(workOrder.testSuiteSource as any), // wtf typescript?
 	]
@@ -161,7 +162,13 @@ class WorkOrdersAPIClass extends MethodContextAPI implements WorkOrdersAPI {
 
 		const newId = protectString<WorkOrderId>(Random.id())
 
-		const commandline = createCommandLine(workOrderSpec)
+		const coreSource = Sources.findOne(workOrderSpec.coreSource)
+
+		if (!coreSource) {
+			throw new Error('Could not find core source ' + workOrderSpec.coreSource)
+		}
+
+		const commandline = createCommandLine(workOrderSpec, coreSource as CoreDockerRegistrySource)
 
 		const workOrderId = WorkOrders.insert({
 			...workOrderSpec,
@@ -198,7 +205,13 @@ class WorkOrdersAPIClass extends MethodContextAPI implements WorkOrdersAPI {
 			...workOrderSpec,
 		}
 
-		const commandline = createCommandLine(modifiedWorkOrder)
+		const coreSource = Sources.findOne(modifiedWorkOrder.coreSource)
+
+		if (!coreSource) {
+			throw new Error('Could not find core source ' + modifiedWorkOrder.coreSource)
+		}
+
+		const commandline = createCommandLine(modifiedWorkOrder, coreSource as CoreDockerRegistrySource)
 
 		WorkOrders.update(workOrderId, {
 			$set: {

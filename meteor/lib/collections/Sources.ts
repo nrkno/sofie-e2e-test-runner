@@ -17,7 +17,7 @@ export enum GitRepositorySourceType {
 	Tests = 'tests',
 }
 
-export type Source = GitRepositorySource | DockerRegistrySource
+export type Source = GitRepositorySource | DockerRegistrySource | CoreDockerRegistrySource
 
 interface SourceBase {
 	/** Name of the Source */
@@ -68,6 +68,19 @@ export interface DockerRegistrySource extends SourceBase {
 	password?: string
 	/** Is a password set? */
 	passwordSet?: boolean
+
+	playoutImage?: string
+	ingestImage?: string
+}
+
+/**
+ * Sofie core is a mono repo spitting out multiple images, so these images have to be specified separately
+ *
+ */
+export interface CoreDockerRegistrySource extends DockerRegistrySource {
+	type: DockerImageSourceType.Core
+	playoutImage: string
+	ingestImage: string
 }
 
 export const Sources = createMongoCollection<Source>(CollectionName.Sources)
