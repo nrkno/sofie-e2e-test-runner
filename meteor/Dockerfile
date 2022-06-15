@@ -19,7 +19,7 @@ WORKDIR /opt/bundle/programs/server/
 RUN npm install
 
 # DEPLOY IMAGE
-FROM node:14.18
+FROM cypress/browsers:node14.19.0-chrome100-ff99-edge
 COPY --from=0 /opt/bundle /opt/core
 COPY meteor/docker-entrypoint.sh /opt
 

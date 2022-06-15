@@ -1,5 +1,5 @@
 # DEPLOY IMAGE
-FROM node:14.18
+FROM cypress/browsers:node14.19.0-chrome100-ff99-edge
 
 COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
 
