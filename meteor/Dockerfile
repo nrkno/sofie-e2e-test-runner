@@ -23,5 +23,7 @@ FROM node:14.18
 COPY --from=0 /opt/bundle /opt/core
 COPY meteor/docker-entrypoint.sh /opt
 
+COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
+
 WORKDIR /opt/core/
 CMD ["/opt/docker-entrypoint.sh"]

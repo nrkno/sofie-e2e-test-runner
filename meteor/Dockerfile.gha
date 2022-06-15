@@ -1,5 +1,8 @@
 # DEPLOY IMAGE
 FROM node:14.18
+
+COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
+
 COPY meteor/bundle /opt/core
 COPY meteor/docker-entrypoint.sh /opt
 WORKDIR /opt/core/
