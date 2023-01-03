@@ -1,10 +1,6 @@
 import { CCol, CFormInput, CFormLabel, CFormText, CRow } from '@coreui/react'
 import React from 'react'
-import {
-	CoreDockerRegistrySource as CoreDockerRegistrySource,
-	DockerRegistrySource,
-	Source,
-} from '../../../lib/collections/Sources'
+import { CoreDockerRegistrySource as CoreDockerRegistrySource, Source } from '../../../lib/collections/Sources'
 
 export const SourceCoreEdit: React.FC<{
 	sourceObj: CoreDockerRegistrySource
