@@ -15,14 +15,14 @@ jobs:
     continue-on-error: true
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             meteor/node_modules
@@ -43,14 +43,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             meteor/node_modules
@@ -67,7 +67,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
           # name: codecov-umbrella
@@ -78,19 +78,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v2
-      - name: Get the Docker tag
-        id: docker-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
-        with:
-          remove-version-tag-prefix: false
+      - uses: actions/checkout@v3
       - name: Determine images to publish
         id: image-tags
         run: |
           IMAGES=
-          DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
+          DOCKER_TAG=$(echo "${{ github.ref_name }}" | sed -r 's/[^a-z0-9]+/-/gi')
           # check if a release branch, or master, or a tag
-          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
+          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "master" || $DOCKER_TAG == "main" || "${{ github.ref }}" == refs/tags/* ]]
           then
             # If we have a dockerhub image name, then setup to publish there
             if [ -z "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}" ]
@@ -114,14 +109,14 @@ jobs:
             echo dockerhub-publish $DOCKERHUB_PUBLISH
             echo ghcr-publish $GHCR_PUBLISH
             echo images $IMAGES
-            echo ::set-output name=images::"$IMAGES"
-            echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
-            echo ::set-output name=ghcr-publish::"$GHCR_PUBLISH"
+            echo "images=$IMAGES" >> $GITHUB_OUTPUT
+            echo "dockerhub-publish=$DOCKERHUB_PUBLISH" >> $GITHUB_OUTPUT
+            echo "ghcr-publish=$GHCR_PUBLISH" >> $GITHUB_OUTPUT
           else
             echo "Skipping docker build"
           fi
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         if: ${{ steps.image-tags.outputs.images }}
         with:
           node-version-file: ".node-version"
@@ -148,22 +143,22 @@ jobs:
           meteor npm install
       - name: Set up Docker Buildx
         if: ${{ steps.image-tags.outputs.images }}
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
         if: steps.image-tags.outputs.images && steps.image-tags.outputs.dockerhub-publish == '1'
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Login to GitHub Container Registry
         if: steps.image-tags.outputs.images && steps.image-tags.outputs.ghcr-publish == '1'
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         if: ${{ steps.image-tags.outputs.images }}
         with:
           context: .
