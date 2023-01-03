@@ -52,7 +52,7 @@ async function checkoutTestsRepository(sourceId: SourceId, ref: string) {
 }
 
 async function workOnWorkOrder(workOrder: WorkOrder): Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed> {
-	return new Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed>(async (resolve, reject) => {
+	return new Promise<WorkOrderStatus.Passed | WorkOrderStatus.Failed>((resolve, reject) => {
 		const command = workOrder.commandline[0]
 		const args = workOrder.commandline.slice(1)
 
@@ -61,54 +61,54 @@ async function workOnWorkOrder(workOrder: WorkOrder): Promise<WorkOrderStatus.Pa
 		let sentResult = false
 
 		logger.debug(`Checking out tests reposistory..`)
-		await checkoutTestsRepository(workOrder.testSuiteSource, workOrder.testSuiteSourceRef)
+		void checkoutTestsRepository(workOrder.testSuiteSource, workOrder.testSuiteSourceRef).then(() => {
+			logger.debug(`Starting process: ${command} ${args.join(' ')}`)
+			const worker = cp.spawn(command, args, {
+				stdio: 'pipe',
+				timeout: WORK_ORDER_TIMEOUT,
+				cwd: Env.EXECUTOR_CWD,
+			})
+			// We expect the process to output text
+			worker.stdout.setEncoding('utf8')
+			worker.stderr.setEncoding('utf8')
 
-		logger.debug(`Starting process: ${command} ${args.join(' ')}`)
-		const worker = cp.spawn(command, args, {
-			stdio: 'pipe',
-			timeout: WORK_ORDER_TIMEOUT,
-			cwd: Env.EXECUTOR_CWD,
+			worker.stdout.on(
+				'data',
+				Meteor.bindEnvironment((data) => {
+					onOutputFromCommand(workOrderId, data, workOrder.tags)
+				})
+			)
+			worker.stderr.on(
+				'data',
+				Meteor.bindEnvironment((data) => {
+					onOutputFromCommand(workOrderId, data, workOrder.tags, 'stderr')
+				})
+			)
+
+			worker.on(
+				'error',
+				Meteor.bindEnvironment((err) => {
+					if (sentResult) return
+					sentResult = true
+					logger.error(`Process for WorkOrder "${workOrderId}" execution failed with error: ${err}`)
+					reject(err)
+				})
+			)
+			worker.on(
+				'close',
+				Meteor.bindEnvironment((code) => {
+					if (sentResult) return
+					sentResult = true
+					if (code !== 0) {
+						logger.warn(`Process for WorkOrder "${workOrderId}" execution finished with code: ${code}`)
+						resolve(WorkOrderStatus.Failed)
+						return
+					}
+					logger.debug(`Process for WorkOrder "${workOrderId}" finished with code ${code}.`)
+					resolve(WorkOrderStatus.Passed)
+				})
+			)
 		})
-		// We expect the process to output text
-		worker.stdout.setEncoding('utf8')
-		worker.stderr.setEncoding('utf8')
-
-		worker.stdout.on(
-			'data',
-			Meteor.bindEnvironment((data) => {
-				onOutputFromCommand(workOrderId, data, workOrder.tags)
-			})
-		)
-		worker.stderr.on(
-			'data',
-			Meteor.bindEnvironment((data) => {
-				onOutputFromCommand(workOrderId, data, workOrder.tags, 'stderr')
-			})
-		)
-
-		worker.on(
-			'error',
-			Meteor.bindEnvironment((err) => {
-				if (sentResult) return
-				sentResult = true
-				logger.error(`Process for WorkOrder "${workOrderId}" execution failed with error: ${err}`)
-				reject(err)
-			})
-		)
-		worker.on(
-			'close',
-			Meteor.bindEnvironment((code) => {
-				if (sentResult) return
-				sentResult = true
-				if (code !== 0) {
-					logger.warn(`Process for WorkOrder "${workOrderId}" execution finished with code: ${code}`)
-					resolve(WorkOrderStatus.Failed)
-					return
-				}
-				logger.debug(`Process for WorkOrder "${workOrderId}" finished with code ${code}.`)
-				resolve(WorkOrderStatus.Passed)
-			})
-		)
 	})
 }
 
