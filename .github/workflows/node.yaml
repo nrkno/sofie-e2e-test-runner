@@ -19,7 +19,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -49,7 +49,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -122,7 +122,7 @@ jobs:
             echo "Skipping docker build"
           fi
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         if: ${{ steps.image-tags.outputs.images }}
         with:
           node-version-file: ".node-version"
